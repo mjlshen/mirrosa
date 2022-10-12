@@ -51,6 +51,17 @@ func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) er
 	return nil
 }
 
-// ValidateSomethingElse
+// We can get baseDomain from `ocm describe cluster $CLUSTER_ID --json`
+func GetBaseDomainFromClusterId(clusterId string) string {
+	return ""
+}
+
+// ValidatePublicRoute53HostedZone
+// We can get baseDomain from `ocm describe cluster $CLUSTER_ID --json`
+func (c *RosaClient) ValidatePublicRoute53HostedZoneExists(ctx context.Context, baseDomain string) error {
+	// Do stuff
+
+	return nil
+}
 
 // ValidateAnotherThing
