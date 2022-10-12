@@ -2,6 +2,7 @@ package rosa
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -19,12 +20,35 @@ type RosaClient struct {
 }
 
 // ValidateVpcAttributes will inspect a provided vpcId and ensure that
-// "enableDnsHostnames" and "enableDnsSupport"
-func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) {
-	c.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
+// "enableDnsHostnames" and "enableDnsSupport" are true
+func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) error {
+	dnsHostnames, err := c.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
 		Attribute: ec2Types.VpcAttributeNameEnableDnsHostnames,
 		VpcId:     aws.String(vpcId),
 	})
+	if err != nil {
+		return err
+	}
+
+	dnsSupport, err := c.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
+		Attribute: ec2Types.VpcAttributeNameEnableDnsSupport,
+		VpcId:     aws.String(vpcId),
+	})
+	if err != nil {
+		return err
+	}
+
+	// Make sure dnsHostname's enableDnsHostnames attribute is true
+	if !*dnsHostnames.EnableDnsHostnames.Value {
+		return fmt.Errorf("enableDnsHostnames is false for VPC: %s", vpcId)
+	}
+
+	// Repeat for enableDnsSupport
+	if !*dnsSupport.EnableDnsSupport.Value {
+		return fmt.Errorf("enableDnsSupport is false for VPC: %s", vpcId)
+	}
+
+	return nil
 }
 
 // ValidateSomethingElse
