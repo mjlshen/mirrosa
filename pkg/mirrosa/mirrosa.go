@@ -11,14 +11,28 @@ import (
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 )
 
-// Client holds relevant data about a ROSA cluster gleaned from OCM
-// and an AwsApi to validate the cluster in AWS
+// Client holds relevant information about a ROSA cluster gleaned from OCM and an AwsApi to validate the cluster in AWS
 type Client struct {
 	// Cluster holds a cluster object from OCM
 	Cluster *cmv1.Cluster
 
 	// AwsApi is used to connect to AWS and validate cloud infrastructure
 	AwsApi *rosa.RosaClient
+
+	// ClusterInfo contains information about the ROSA cluster that will be used to validate it
+	ClusterInfo *ClusterInfo
+}
+
+// ClusterInfo contains information about the ROSA cluster that will be used to validate it
+type ClusterInfo struct {
+	// Name of the cluster
+	Name string
+
+	// BaseDomain is the DNS base domain of the cluster
+	BaseDomain string
+
+	// VpcId is the AWS VPC ID the cluster is installed in
+	VpcId string
 }
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
@@ -55,8 +69,34 @@ func NewClient(ctx context.Context, clusterId string) (*Client, error) {
 		return nil, err
 	}
 
-	return &Client{
+	c := &Client{
 		AwsApi:  rosaClient,
 		Cluster: cluster,
-	}, nil
+		ClusterInfo: &ClusterInfo{
+			Name:       cluster.Name(),
+			BaseDomain: cluster.DNS().BaseDomain(),
+		},
+	}
+
+	if err := c.DetermineVpcId(ctx); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+// DetermineVpcId populates the VpcId field of the Client struct based on the type of cluster
+func (c *Client) DetermineVpcId(ctx context.Context) error {
+	if ocm.IsClusterByovpc(c.Cluster) {
+		vpcId, err := c.AwsApi.GetVpcIdFromSubnetId(ctx, c.Cluster.AWS().SubnetIDs()[0])
+		if err != nil {
+			return err
+		}
+
+		c.ClusterInfo.VpcId = *vpcId
+	}
+
+	// TODO: If cluster is not BYOVPC, need to use base domain --> Private Route53 Hosted Zone --> Associated VPC ID
+
+	return nil
 }

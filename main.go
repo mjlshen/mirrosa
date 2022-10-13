@@ -21,5 +21,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("%s, \"Mirror mirror on the wall, who's the fairest of them all?\"\n%+v\n", mirrosa.Cluster.Name(), mirrosa)
+	fmt.Printf("%s, \"Mirror mirror on the wall, who's the fairest of them all?\"\n%+v\n", mirrosa.ClusterInfo.Name, *mirrosa.ClusterInfo)
 }

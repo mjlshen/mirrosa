@@ -12,6 +12,7 @@ import (
 )
 
 type RosaAWSClient interface {
+	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
 	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 }
 
@@ -26,10 +27,28 @@ func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (
 		return nil, err
 	}
 
+	//test := ec2.NewFromConfig(cfg)
+
 	return &RosaClient{
 		Ec2Client:     ec2.NewFromConfig(cfg),
 		Route53Client: route53.NewFromConfig(cfg),
 	}, nil
+}
+
+// GetVpcIdFromSubnetId returns the VPC ID associated with a provided subnetId
+func (c *RosaClient) GetVpcIdFromSubnetId(ctx context.Context, subnetId string) (*string, error) {
+	subnet, err := c.Ec2Client.DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{
+		SubnetIds: []string{subnetId},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(subnet.Subnets) == 0 {
+		return nil, fmt.Errorf("no subnet found with id: %s", subnetId)
+	}
+
+	return subnet.Subnets[0].VpcId, nil
 }
 
 // ValidateVpcAttributes will inspect a provided vpcId and ensure that
