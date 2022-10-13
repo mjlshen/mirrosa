@@ -8,23 +8,21 @@ import (
 
 	"github.com/mjlshen/mirrosa/pkg/ocm"
 	"github.com/mjlshen/mirrosa/pkg/rosa"
+	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 )
 
 // Client holds relevant data about a ROSA cluster gleaned from OCM
 // and an AwsApi to validate the cluster in AWS
 type Client struct {
-	// BaseDomain is the DNS base domain of the cluster, reflected in Route53
-	BaseDomain string
-
 	// Byovpc is true when the cluster is installed into an existing VPC
 	Byovpc bool
 
-	// Ccs (Customer Cloud Subscription) is true when the cluster is installed into
-	// a customer's AWS account
-	Ccs bool
+	// Cluster holds a cluster object from OCM
+	Cluster *cmv1.Cluster
 
-	// Region is the AWS region the cluster is installed in
-	Region string
+	// CCS (Customer Cloud Subscription) is true when the cluster is installed into
+	// a customer's AWS account
+	CCS bool
 
 	// Sts is true if the ROSA cluster is installed in STS mode
 	Sts bool
@@ -82,10 +80,9 @@ func NewClient(ctx context.Context, clusterId string) (*Client, error) {
 
 	return &Client{
 		AwsApi:      rosaClient,
-		BaseDomain:  cluster.DNS().BaseDomain(),
 		Byovpc:      byovpc,
-		Ccs:         cluster.CCS().Enabled(),
-		Region:      region,
+		Cluster:     cluster,
+		CCS:         cluster.CCS().Enabled(),
 		PrivateLink: cluster.AWS().PrivateLink(),
 		Sts:         sts,
 	}, nil

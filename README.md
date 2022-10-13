@@ -13,8 +13,11 @@
 ```mermaid
 graph TD;
   C[OCM ClusterId]-->P[PrivateLink]
+  P-->VPCES[VPC Endpoint Service]
   C-->STS
   C-->D[DNS Basedomain]
+  C-->BYOVPC
+  BYOVPC-->Subnet
   D-->R[Route53 Private Hosted Zone]
   D-->RPub[Route53 Public Hosted Zone]
   R-->APILB[api LB]
