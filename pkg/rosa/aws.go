@@ -12,8 +12,11 @@ import (
 )
 
 type RosaAWSClient interface {
+	// EC2 Functions
 	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
 	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
+	// Route53 Functions
+	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
 }
 
 type RosaClient struct {
@@ -86,8 +89,18 @@ func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) er
 // ValidatePublicRoute53HostedZone
 // We can get baseDomain from `ocm describe cluster $CLUSTER_ID --json`
 func (c *RosaClient) ValidatePublicRoute53HostedZoneExists(ctx context.Context, baseDomain string) error {
-	// Do stuff
 
+	// List all the hostedzone with that name (Could be more than 1)
+	hostedZones, err := c.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
+		DNSName: aws.String(baseDomain),
+	})
+	if err != nil {
+		return err
+	}
+
+	if hostedZones.HostedZones[0].Config.PrivateZone {
+		return fmt.Errorf("expected Public Hosted Zone however, it shows the private hosted zone %s", *hostedZones.HostedZones[0].Name)
+	}
 	return nil
 }
 
