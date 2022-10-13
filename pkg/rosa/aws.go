@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
@@ -17,6 +18,18 @@ type RosaAWSClient interface {
 type RosaClient struct {
 	Ec2Client     *ec2.Client
 	Route53Client *route53.Client
+}
+
+func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (*RosaClient, error) {
+	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RosaClient{
+		Ec2Client:     ec2.NewFromConfig(cfg),
+		Route53Client: route53.NewFromConfig(cfg),
+	}, nil
 }
 
 // ValidateVpcAttributes will inspect a provided vpcId and ensure that
@@ -49,11 +62,6 @@ func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) er
 	}
 
 	return nil
-}
-
-// We can get baseDomain from `ocm describe cluster $CLUSTER_ID --json`
-func GetBaseDomainFromClusterId(clusterId string) string {
-	return ""
 }
 
 // ValidatePublicRoute53HostedZone

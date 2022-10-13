@@ -2,40 +2,24 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 
-	"github.com/mjlshen/mirrosa/pkg/rosa"
-
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"github.com/aws/aws-sdk-go-v2/service/route53"
+	"github.com/mjlshen/mirrosa/pkg/mirrosa"
 )
 
 func main() {
-	// clusterId := flag.String("cluster-id", "", "Cluster ID")
-	// flag.Parse()
+	clusterId := flag.String("cluster-id", "", "Cluster ID")
+	flag.Parse()
 
-	// ocmClient, err := ocm.CreateConnection()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer ocmClient.Close()
+	if *clusterId == "" {
+		panic("cluster id must not be empty")
+	}
 
-	// ocmClient.GetCluster
-
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	mirrosa, err := mirrosa.NewClient(context.TODO(), *clusterId)
 	if err != nil {
 		panic(err)
 	}
 
-	r := rosa.RosaClient{
-		Ec2Client:     ec2.NewFromConfig(cfg),
-		Route53Client: route53.NewFromConfig(cfg),
-	}
-
-	if err := r.ValidateVpcAttributes(context.TODO(), "vpc-12345"); err != nil {
-		panic(err)
-	}
-
-	fmt.Println(r)
+	fmt.Printf("%+v\n", mirrosa)
 }

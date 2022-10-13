@@ -9,3 +9,21 @@
     * Input: ClusterID
     * Figure out what type of ROSA cluster that clusterID is
     * Output: Validate and print any differences in AWS
+
+```mermaid
+graph TD;
+  C[OCM ClusterId]-->P[PrivateLink]
+  C-->STS
+  C-->D[DNS Basedomain]
+  D-->R[Route53 Private Hosted Zone]
+  D-->RPub[Route53 Public Hosted Zone]
+  R-->APILB[api LB]
+  R-->ALB[*.apps LB]
+  R-->V[VPC ID]
+  V-->Subnet[SubnetIDs]
+  Subnet-->RT[Route Tables]
+  V-->SG[Security Groups]
+  V-->VPCE[S3 VPC Endpoint]
+  V-->IGW[Internet Gateway]
+  RT-->NAT[NAT Gateway]
+```
