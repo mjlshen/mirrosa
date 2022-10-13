@@ -16,6 +16,7 @@ type RosaAWSClient interface {
 	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
 	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 	// Route53 Functions
+	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
 	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
 }
 
@@ -30,7 +31,7 @@ func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (
 		return nil, err
 	}
 
-	//test := ec2.NewFromConfig(cfg)
+	//test := route53.NewFromConfig(cfg)
 
 	return &RosaClient{
 		Ec2Client:     ec2.NewFromConfig(cfg),
@@ -52,6 +53,33 @@ func (c *RosaClient) GetVpcIdFromSubnetId(ctx context.Context, subnetId string) 
 	}
 
 	return subnet.Subnets[0].VpcId, nil
+}
+
+// GetVpcIdFromBaseDomain returns the VPC ID associated with a ROSA cluster's Route53 private hosted zone
+func (c *RosaClient) GetVpcIdFromBaseDomain(ctx context.Context, name, baseDomain string) (*string, error) {
+	hostedZones, err := c.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
+		DNSName: aws.String(fmt.Sprintf("%s.%s", name, baseDomain)),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if !hostedZones.HostedZones[0].Config.PrivateZone {
+		return nil, fmt.Errorf("expected Private hosted zone, found public hosted zone: %s", *hostedZones.HostedZones[0].Id)
+	}
+
+	hz, err := c.Route53Client.GetHostedZone(ctx, &route53.GetHostedZoneInput{
+		Id: hostedZones.HostedZones[0].Id,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(hz.VPCs) != 1 {
+		return nil, fmt.Errorf("expected one VPC association, found %d for %s", len(hz.VPCs), *hostedZones.HostedZones[0].Id)
+	}
+
+	return hz.VPCs[0].VPCId, nil
 }
 
 // ValidateVpcAttributes will inspect a provided vpcId and ensure that

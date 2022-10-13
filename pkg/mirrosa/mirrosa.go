@@ -87,16 +87,26 @@ func NewClient(ctx context.Context, clusterId string) (*Client, error) {
 
 // DetermineVpcId populates the VpcId field of the Client struct based on the type of cluster
 func (c *Client) DetermineVpcId(ctx context.Context) error {
+	var (
+		vpcId *string
+		err   error
+	)
+
 	if ocm.IsClusterByovpc(c.Cluster) {
-		vpcId, err := c.AwsApi.GetVpcIdFromSubnetId(ctx, c.Cluster.AWS().SubnetIDs()[0])
+		vpcId, err = c.AwsApi.GetVpcIdFromSubnetId(ctx, c.Cluster.AWS().SubnetIDs()[0])
 		if err != nil {
 			return err
 		}
 
-		c.ClusterInfo.VpcId = *vpcId
+	} else {
+		vpcId, err = c.AwsApi.GetVpcIdFromBaseDomain(ctx, c.ClusterInfo.Name, c.ClusterInfo.BaseDomain)
+		if err != nil {
+			return err
+		}
+
 	}
 
-	// TODO: If cluster is not BYOVPC, need to use base domain --> Private Route53 Hosted Zone --> Associated VPC ID
+	c.ClusterInfo.VpcId = *vpcId
 
 	return nil
 }
