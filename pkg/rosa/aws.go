@@ -2,12 +2,9 @@ package rosa
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 )
 
@@ -32,104 +29,10 @@ func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (
 	}
 
 	//test := route53.NewFromConfig(cfg)
+	//test.ListHostedZonesByVPC()
 
 	return &RosaClient{
 		Ec2Client:     ec2.NewFromConfig(cfg),
 		Route53Client: route53.NewFromConfig(cfg),
 	}, nil
 }
-
-// GetVpcIdFromSubnetId returns the VPC ID associated with a provided subnetId
-func (c *RosaClient) GetVpcIdFromSubnetId(ctx context.Context, subnetId string) (*string, error) {
-	subnet, err := c.Ec2Client.DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{
-		SubnetIds: []string{subnetId},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(subnet.Subnets) == 0 {
-		return nil, fmt.Errorf("no subnet found with id: %s", subnetId)
-	}
-
-	return subnet.Subnets[0].VpcId, nil
-}
-
-// GetVpcIdFromBaseDomain returns the VPC ID associated with a ROSA cluster's Route53 private hosted zone
-func (c *RosaClient) GetVpcIdFromBaseDomain(ctx context.Context, name, baseDomain string) (*string, error) {
-	hostedZones, err := c.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
-		DNSName: aws.String(fmt.Sprintf("%s.%s", name, baseDomain)),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if !hostedZones.HostedZones[0].Config.PrivateZone {
-		return nil, fmt.Errorf("expected Private hosted zone, found public hosted zone: %s", *hostedZones.HostedZones[0].Id)
-	}
-
-	hz, err := c.Route53Client.GetHostedZone(ctx, &route53.GetHostedZoneInput{
-		Id: hostedZones.HostedZones[0].Id,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(hz.VPCs) != 1 {
-		return nil, fmt.Errorf("expected one VPC association, found %d for %s", len(hz.VPCs), *hostedZones.HostedZones[0].Id)
-	}
-
-	return hz.VPCs[0].VPCId, nil
-}
-
-// ValidateVpcAttributes will inspect a provided vpcId and ensure that
-// "enableDnsHostnames" and "enableDnsSupport" are true
-func (c *RosaClient) ValidateVpcAttributes(ctx context.Context, vpcId string) error {
-	dnsHostnames, err := c.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
-		Attribute: ec2Types.VpcAttributeNameEnableDnsHostnames,
-		VpcId:     aws.String(vpcId),
-	})
-	if err != nil {
-		return err
-	}
-
-	dnsSupport, err := c.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
-		Attribute: ec2Types.VpcAttributeNameEnableDnsSupport,
-		VpcId:     aws.String(vpcId),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Make sure dnsHostname's enableDnsHostnames attribute is true
-	if !*dnsHostnames.EnableDnsHostnames.Value {
-		return fmt.Errorf("enableDnsHostnames is false for VPC: %s", vpcId)
-	}
-
-	// Repeat for enableDnsSupport
-	if !*dnsSupport.EnableDnsSupport.Value {
-		return fmt.Errorf("enableDnsSupport is false for VPC: %s", vpcId)
-	}
-
-	return nil
-}
-
-// ValidatePublicRoute53HostedZone
-// We can get baseDomain from `ocm describe cluster $CLUSTER_ID --json`
-func (c *RosaClient) ValidatePublicRoute53HostedZoneExists(ctx context.Context, baseDomain string) error {
-
-	// List all the hostedzone with that name (Could be more than 1)
-	hostedZones, err := c.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
-		DNSName: aws.String(baseDomain),
-	})
-	if err != nil {
-		return err
-	}
-
-	if hostedZones.HostedZones[0].Config.PrivateZone {
-		return fmt.Errorf("expected Public Hosted Zone however, it shows the private hosted zone %s", *hostedZones.HostedZones[0].Name)
-	}
-	return nil
-}
-
-// ValidateAnotherThing

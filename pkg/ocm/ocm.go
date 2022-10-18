@@ -45,19 +45,6 @@ func GetCluster(conn *sdk.Connection, clusterId string) (*cmv1.Cluster, error) {
 	return nil, fmt.Errorf("there are %d clusters with identifier or name '%s', expected 1", clustersTotal, clusterId)
 }
 
-// IsClusterSts returns true if this is an STS cluster
-func IsClusterSts(cluster *cmv1.Cluster) bool {
-	if cluster.CloudProvider().ID() != "aws" {
-		return false
-	}
-
-	if cluster.AWS().STS().RoleARN() != "" {
-		return true
-	}
-
-	return false
-}
-
 // IsClusterByovpc returns true if this cluster was installed into an existing VPC
 func IsClusterByovpc(cluster *cmv1.Cluster) bool {
 	if cluster.CloudProvider().ID() != CloudProviderAws {
@@ -69,14 +56,4 @@ func IsClusterByovpc(cluster *cmv1.Cluster) bool {
 	}
 
 	return false
-}
-
-// IsClusterPrivateLink returns true if the cluster's API Server is not publicly accessible
-func IsClusterPrivateLink(cluster *cmv1.Cluster) bool {
-	return cluster.AWS().PrivateLink()
-}
-
-// IsClusterCCS returns true if the cluster is installed in a customer's AWS account
-func IsClusterCCS(cluster *cmv1.Cluster) bool {
-	return cluster.CCS().Enabled()
 }
