@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
@@ -13,6 +14,11 @@ import (
 )
 
 const (
+	publicHostedZoneDescription = "A ROSA cluster's public hosted zone holds information about how to route traffic" +
+		" on the internet to a cluster's API Server and Ingress."
+	publicHostedZonePrivateLinkDescription = "A PrivateLink ROSA cluster's public hosted zone is typically empty," +
+		" but is required for Let's Encrypt to complete DNS-01 challenges by populating specific TXT records" +
+		" to prove ownership and renew TLS certificates for the cluster."
 	privateHostedZoneDescription = "A ROSA cluster's private hosted zone holds information about how Route 53" +
 		" to DNS queries within the associated VPC. Records for api-int, api, and *.apps are required."
 )
@@ -23,10 +29,52 @@ type Route53AwsApi interface {
 	ListHostedZonesByVPC(ctx context.Context, params *route53.ListHostedZonesByVPCInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByVPCOutput, error)
 }
 
-//var _ mirrosa.Component = &PublicHostedZone{}
+var _ mirrosa.Component = &PublicHostedZone{}
 
 type PublicHostedZone struct {
+	BaseDomain  string
+	PrivateLink bool
+
 	Route53Client Route53AwsApi
+}
+
+func NewPublicHostedZone(cluster *cmv1.Cluster, api Route53AwsApi) PublicHostedZone {
+	return PublicHostedZone{
+		BaseDomain:    cluster.DNS().BaseDomain(),
+		PrivateLink:   cluster.AWS().PrivateLink(),
+		Route53Client: api,
+	}
+}
+
+func (p PublicHostedZone) Validate(ctx context.Context) (string, error) {
+	if p.BaseDomain == "" {
+		return "", errors.New("must specify a BaseDomain")
+	}
+
+	expectedName := fmt.Sprintf("%s.", p.BaseDomain)
+
+	hzs, err := p.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
+		DNSName: aws.String(expectedName),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for _, hz := range hzs.HostedZones {
+		if !hz.Config.PrivateZone {
+			return *hz.Id, nil
+		}
+	}
+
+	return "", fmt.Errorf("no public hosted zone for %s found", expectedName)
+}
+
+func (p PublicHostedZone) Documentation() string {
+	if p.PrivateLink {
+		return publicHostedZonePrivateLinkDescription
+	}
+
+	return publicHostedZoneDescription
 }
 
 // Ensure PrivateHostedZone implements mirrosa.Component

@@ -35,6 +35,9 @@ type ClusterInfo struct {
 	// VpcId is the AWS ID of the VPC the cluster is installed in
 	VpcId string
 
+	// PublicHostedZoneId is the AWS ID of the Public Route53 Hosted Zone of the cluster
+	PublicHostedZoneId string
+
 	// PrivateHostedZoneId is the AWS ID of the Private Route53 Hosted Zone of the cluster
 	PrivateHostedZoneId string
 }

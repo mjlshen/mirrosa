@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mjlshen/mirrosa/pkg/ocm"
-	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 	"strings"
 
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
+	"github.com/mjlshen/mirrosa/pkg/ocm"
+	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
