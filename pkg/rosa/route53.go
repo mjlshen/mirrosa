@@ -21,6 +21,11 @@ const (
 		" to prove ownership and renew TLS certificates for the cluster."
 	privateHostedZoneDescription = "A ROSA cluster's private hosted zone holds information about how Route 53" +
 		" to DNS queries within the associated VPC. Records for api-int, api, and *.apps are required."
+	privateHostedZoneRecordsDescription = "A ROSA cluster's private hosted zone must contain a minimum of three records:" +
+		"\n  - api so that the API server is routable." +
+		"\n  - api.int so that the API server is routable within the cluster's VPC." +
+		"\n  - *.apps so that applications running on the cluster are routable when exposed by an Ingress" +
+		", including the OpenShift console."
 )
 
 type Route53AwsApi interface {
@@ -132,4 +137,64 @@ func (p PrivateHostedZone) Validate(ctx context.Context) (string, error) {
 
 func (p PrivateHostedZone) Documentation() string {
 	return privateHostedZoneDescription
+}
+
+type PrivateHostedZoneRecords struct {
+	BaseDomain          string
+	ClusterName         string
+	PrivateHostedZoneId string
+
+	Route53Client Route53AwsApi
+}
+
+// Ensure PrivateHostedZoneRecords implements mirrosa.Component
+var _ mirrosa.Component = &PrivateHostedZoneRecords{}
+
+func NewPrivateHostedZoneRecords(cluster *cmv1.Cluster, api Route53AwsApi, privateHostedZoneId string) PrivateHostedZoneRecords {
+	return PrivateHostedZoneRecords{
+		BaseDomain:          cluster.DNS().BaseDomain(),
+		ClusterName:         cluster.Name(),
+		PrivateHostedZoneId: privateHostedZoneId,
+		Route53Client:       api,
+	}
+}
+
+func (p PrivateHostedZoneRecords) Validate(ctx context.Context) (string, error) {
+	if p.PrivateHostedZoneId == "" {
+		return "", errors.New("must specify a private hosted zone id")
+	}
+
+	// TODO: Handle pagination
+	records, err := p.Route53Client.ListResourceRecordSets(ctx, &route53.ListResourceRecordSetsInput{
+		HostedZoneId: aws.String(p.PrivateHostedZoneId),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	api, apiInt, apps := false, false, false
+	for _, record := range records.ResourceRecordSets {
+		if api && apiInt && apps {
+			return "", nil
+		}
+
+		switch *record.Name {
+		case fmt.Sprintf("api.%s.%s.", p.ClusterName, p.BaseDomain):
+			fmt.Println("found api")
+			api = true
+		case fmt.Sprintf("api-int.%s.%s.", p.ClusterName, p.BaseDomain):
+			fmt.Println("found api-int")
+			apiInt = true
+		case fmt.Sprintf("\\052.apps.%s.%s.", p.ClusterName, p.BaseDomain):
+			// \052 is ASCII for *
+			fmt.Println("found apps")
+			apps = true
+		}
+	}
+
+	return "", fmt.Errorf("missing required records for api, api-int, or *.apps")
+}
+
+func (p PrivateHostedZoneRecords) Documentation() string {
+	return privateHostedZoneRecordsDescription
 }

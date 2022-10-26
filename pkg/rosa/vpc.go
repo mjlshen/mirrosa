@@ -116,7 +116,7 @@ func (v Vpc) FindVpcId(ctx context.Context) (string, error) {
 			Filters: []types.Filter{
 				{
 					Name:   aws.String("tag:Name"),
-					Values: []string{v.InfraName},
+					Values: []string{fmt.Sprintf("%s-vpc", v.InfraName)},
 				},
 			},
 		})

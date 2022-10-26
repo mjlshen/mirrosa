@@ -55,6 +55,12 @@ func ValidateAll(ctx context.Context, c *mirrosa.Client) error {
 
 	c.ClusterInfo.PrivateHostedZoneId = privateHzId
 
+	privateHzRecords := rosa.NewPrivateHostedZoneRecords(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	if _, err := c.ValidateComponent(ctx, privateHzRecords); err != nil {
+		fmt.Println(privateHzRecords.Documentation())
+		return err
+	}
+
 	publicHz := rosa.NewPublicHostedZone(c.Cluster, route53.NewFromConfig(c.AwsConfig))
 	publicHzId, err := c.ValidateComponent(ctx, publicHz)
 	if err != nil {
