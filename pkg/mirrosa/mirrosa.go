@@ -29,6 +29,9 @@ type ClusterInfo struct {
 	// Name of the cluster
 	Name string
 
+	// InfraName is the name with an additional slug that hive gives a ROSA cluster
+	InfraName string
+
 	// BaseDomain is the DNS base domain of the cluster
 	BaseDomain string
 
@@ -44,7 +47,7 @@ type ClusterInfo struct {
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
 // mirrosa client. Requires valid AWS and OCM credentials to be present beforehand.
-func NewClient(ctx context.Context, clusterId string) (*Client, error) {
+func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error) {
 	ocmConn, err := ocm.CreateConnection()
 	if err != nil {
 		return nil, err
@@ -84,11 +87,20 @@ func NewClient(ctx context.Context, clusterId string) (*Client, error) {
 		return nil, err
 	}
 
+	if infraName == "" {
+		infraName = cluster.InfraID()
+	}
+
+	if infraName == "" {
+		return nil, fmt.Errorf("unable to determine infra name from OCM, please specify with --infra-name")
+	}
+
 	c := &Client{
 		AwsConfig: cfg,
 		Cluster:   cluster,
 		ClusterInfo: &ClusterInfo{
 			Name:       cluster.Name(),
+			InfraName:  cluster.InfraID(),
 			BaseDomain: cluster.DNS().BaseDomain(),
 		},
 	}

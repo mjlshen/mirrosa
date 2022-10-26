@@ -4,25 +4,29 @@ import (
 	"context"
 	"flag"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
-	"github.com/mjlshen/mirrosa/pkg/rosa"
 
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
+	"github.com/mjlshen/mirrosa/pkg/rosa"
 )
 
 func main() {
 	clusterId := flag.String("cluster-id", "", "Cluster ID")
+	infraName := flag.String("infra-name", "", "Full infra name, essentially cluster-name + slug")
 	flag.Parse()
 
 	if *clusterId == "" {
 		panic("cluster id must not be empty")
 	}
 
-	mirrosa, err := mirrosa.NewClient(context.TODO(), *clusterId)
+	mirrosa, err := mirrosa.NewClient(context.TODO(), *clusterId, *infraName)
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Printf("%+v\n", mirrosa.ClusterInfo)
 
 	if err := ValidateAll(context.TODO(), mirrosa); err != nil {
 		panic(err)
