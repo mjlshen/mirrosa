@@ -29,7 +29,7 @@ func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (
 	}
 
 	//test := route53.NewFromConfig(cfg)
-	//test.ListHostedZonesByVPC()
+	//test.ListResourceRecordSets()
 
 	return &RosaClient{
 		Ec2Client:     ec2.NewFromConfig(cfg),

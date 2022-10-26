@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
 	"github.com/mjlshen/mirrosa/pkg/ocm"
@@ -29,19 +28,20 @@ type VpcAWSApi interface {
 var _ mirrosa.Component = &Vpc{}
 
 type Vpc struct {
-	ClusterName string
-	Byovpc      bool
-	SubnetIds   []string
+	InfraName string
+	Byovpc    bool
+	SubnetIds []string
 
 	Ec2Client VpcAWSApi
 }
 
 func NewVpc(cluster *cmv1.Cluster, api VpcAWSApi) Vpc {
 	return Vpc{
-		ClusterName: cluster.Name(),
-		Byovpc:      ocm.IsClusterByovpc(cluster),
-		SubnetIds:   cluster.AWS().SubnetIDs(),
-		Ec2Client:   api,
+		// TODO: This doesn't allow the --infra-name override
+		InfraName: cluster.InfraID(),
+		Byovpc:    ocm.IsClusterByovpc(cluster),
+		SubnetIds: cluster.AWS().SubnetIDs(),
+		Ec2Client: api,
 	}
 }
 
@@ -107,16 +107,16 @@ func (v Vpc) FindVpcId(ctx context.Context) (string, error) {
 	} else {
 		// If this is not a BYOVPC cluster, there are no subnets provided. Instead, go off the cluster name
 		// to find the VPC by tag as a best guess
-		if v.ClusterName == "" {
-			return "", errors.New("empty Name supplied")
+		if v.InfraName == "" {
+			return "", errors.New("empty infraName supplied")
 		}
 
 		// TODO: Handle pagination
 		vpcs, err := v.Ec2Client.DescribeVpcs(ctx, &ec2.DescribeVpcsInput{
 			Filters: []types.Filter{
 				{
-					Name:   aws.String("tag-key"),
-					Values: []string{"Name"},
+					Name:   aws.String("tag:Name"),
+					Values: []string{v.InfraName},
 				},
 			},
 		})
@@ -124,16 +124,13 @@ func (v Vpc) FindVpcId(ctx context.Context) (string, error) {
 			return "", err
 		}
 
-		for _, vpc := range vpcs.Vpcs {
-			for _, tag := range vpc.Tags {
-				if *tag.Key == "Name" {
-					if strings.Contains(*tag.Value, v.ClusterName) {
-						return *vpc.VpcId, nil
-					}
-				}
-			}
+		switch len(vpcs.Vpcs) {
+		case 0:
+			return "", fmt.Errorf("no VPCs found with expected Name tag: %s", v.InfraName)
+		case 1:
+			return *vpcs.Vpcs[0].VpcId, nil
+		default:
+			return "", fmt.Errorf("multiple VPCs found with the expected Name tag: %s", v.InfraName)
 		}
 	}
-
-	return "", errors.New("vpc not found")
 }
