@@ -2,11 +2,30 @@ package rosa
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 )
+
+type Ec2AwsApi interface {
+	DescribeVpcs(ctx context.Context, params *ec2.DescribeVpcsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
+	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
+	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
+}
+
+type ElbAwsApi interface {
+	DescribeLoadBalancers(ctx context.Context, params *elb.DescribeLoadBalancersInput, optFns ...func(*elb.Options)) (*elb.DescribeLoadBalancersOutput, error)
+}
+
+type Route53AwsApi interface {
+	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
+	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
+	ListHostedZonesByVPC(ctx context.Context, params *route53.ListHostedZonesByVPCInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByVPCOutput, error)
+	ListResourceRecordSets(ctx context.Context, params *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
+}
 
 type RosaAWSClient interface {
 	// EC2 Functions
@@ -22,17 +41,10 @@ type RosaClient struct {
 	Route53Client *route53.Client
 }
 
-func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) (*RosaClient, error) {
-	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
-	if err != nil {
-		return nil, err
-	}
+func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) {
+	cfg, _ := config.LoadDefaultConfig(ctx, optFns...)
+	fmt.Println(cfg)
 
-	//test := route53.NewFromConfig(cfg)
-	//test.ListResourceRecordSets()
-
-	return &RosaClient{
-		Ec2Client:     ec2.NewFromConfig(cfg),
-		Route53Client: route53.NewFromConfig(cfg),
-	}, nil
+	//test := elb.NewFromConfig(cfg)
+	//test.DescribeLoadBalancers()
 }

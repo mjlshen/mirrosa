@@ -18,12 +18,6 @@ const vpcDescription = "A ROSA cluster's VPC can be built by the installer or an
 	"`enableDnsSupport` and `enableDnsHostnames` must be enabled on the VPC so that the cluster can use the " +
 	"private Route 53 Hosted Zones attached to the VPC to resolve internal DNS records."
 
-type VpcAWSApi interface {
-	DescribeVpcs(ctx context.Context, params *ec2.DescribeVpcsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
-	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
-	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
-}
-
 // Ensure Vpc implements mirrosa.Component
 var _ mirrosa.Component = &Vpc{}
 
@@ -32,10 +26,10 @@ type Vpc struct {
 	Byovpc    bool
 	SubnetIds []string
 
-	Ec2Client VpcAWSApi
+	Ec2Client Ec2AwsApi
 }
 
-func NewVpc(cluster *cmv1.Cluster, api VpcAWSApi) Vpc {
+func NewVpc(cluster *cmv1.Cluster, api Ec2AwsApi) Vpc {
 	return Vpc{
 		// TODO: This doesn't allow the --infra-name override
 		InfraName: cluster.InfraID(),

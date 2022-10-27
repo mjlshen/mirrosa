@@ -55,11 +55,28 @@ func ValidateAll(ctx context.Context, c *mirrosa.Client) error {
 
 	c.ClusterInfo.PrivateHostedZoneId = privateHzId
 
-	privateHzRecords := rosa.NewPrivateHostedZoneRecords(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
-	if _, err := c.ValidateComponent(ctx, privateHzRecords); err != nil {
-		fmt.Println(privateHzRecords.Documentation())
+	privateHzAppsRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	appsLB, err := c.ValidateComponent(ctx, privateHzAppsRecords)
+	if err != nil {
+		fmt.Println(privateHzAppsRecords.Documentation())
 		return err
 	}
+
+	privateHzApiRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	apiLB, err := c.ValidateComponent(ctx, privateHzApiRecords)
+	if err != nil {
+		fmt.Println(privateHzApiRecords.Documentation())
+		return err
+	}
+
+	privateHzApiIntRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	apiIntLB, err := c.ValidateComponent(ctx, privateHzApiIntRecords)
+	if err != nil {
+		fmt.Println(privateHzApiIntRecords.Documentation())
+		return err
+	}
+
+	fmt.Println(appsLB, apiLB, apiIntLB)
 
 	publicHz := rosa.NewPublicHostedZone(c.Cluster, route53.NewFromConfig(c.AwsConfig))
 	publicHzId, err := c.ValidateComponent(ctx, publicHz)

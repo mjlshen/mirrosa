@@ -26,14 +26,18 @@ const (
 		"\n  - api.int so that the API server is routable within the cluster's VPC." +
 		"\n  - *.apps so that applications running on the cluster are routable when exposed by an Ingress" +
 		", including the OpenShift console."
+	privateHostedZoneAppsRecordDescription = "A ROSA cluster's private hosted zone must contain a *.apps A record " +
+		"so that applications running on the cluster are routable within the cluster's VPC, including the " +
+		"OpenShift console."
+	privateHostedZoneApiRecordDescription = "A ROSA cluster's private hosted zone must contain an api A record " +
+		"so that the cluster's API server is routable within the cluster's VPC."
+	privateHostedZoneApiIntRecordDescription = "A ROSA cluster's private hosted zone must contain an api-int A record " +
+		"so that the cluster's API server is routable within the cluster's VPC for internal workloads."
+	// \052 is ASCII for *
+	privateHostedZoneAppsRecordPrefix   = "\\052.apps"
+	privateHostedZoneApiRecordPrefix    = "api"
+	privateHostedZoneApiIntRecordPrefix = "api.int"
 )
-
-type Route53AwsApi interface {
-	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
-	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
-	ListHostedZonesByVPC(ctx context.Context, params *route53.ListHostedZonesByVPCInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByVPCOutput, error)
-	ListResourceRecordSets(ctx context.Context, params *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
-}
 
 var _ mirrosa.Component = &PublicHostedZone{}
 
@@ -139,27 +143,49 @@ func (p PrivateHostedZone) Documentation() string {
 	return privateHostedZoneDescription
 }
 
-type PrivateHostedZoneRecords struct {
+type PrivateHostedZoneRecord struct {
 	BaseDomain          string
 	ClusterName         string
 	PrivateHostedZoneId string
+	Prefix              string
 
 	Route53Client Route53AwsApi
 }
 
-// Ensure PrivateHostedZoneRecords implements mirrosa.Component
-var _ mirrosa.Component = &PrivateHostedZoneRecords{}
+// Ensure PrivateHostedZoneRecord implements mirrosa.Component
+var _ mirrosa.Component = &PrivateHostedZoneRecord{}
 
-func NewPrivateHostedZoneRecords(cluster *cmv1.Cluster, api Route53AwsApi, privateHostedZoneId string) PrivateHostedZoneRecords {
-	return PrivateHostedZoneRecords{
+func NewPrivateHostedZoneAppsRecord(cluster *cmv1.Cluster, api Route53AwsApi, privateHostedZoneId string) PrivateHostedZoneRecord {
+	return PrivateHostedZoneRecord{
 		BaseDomain:          cluster.DNS().BaseDomain(),
 		ClusterName:         cluster.Name(),
 		PrivateHostedZoneId: privateHostedZoneId,
+		Prefix:              privateHostedZoneAppsRecordPrefix,
 		Route53Client:       api,
 	}
 }
 
-func (p PrivateHostedZoneRecords) Validate(ctx context.Context) (string, error) {
+func NewPrivateHostedZoneApiRecord(cluster *cmv1.Cluster, api Route53AwsApi, privateHostedZoneId string) PrivateHostedZoneRecord {
+	return PrivateHostedZoneRecord{
+		BaseDomain:          cluster.DNS().BaseDomain(),
+		ClusterName:         cluster.Name(),
+		PrivateHostedZoneId: privateHostedZoneId,
+		Prefix:              privateHostedZoneApiRecordPrefix,
+		Route53Client:       api,
+	}
+}
+
+func NewPrivateHostedZoneApiIntRecord(cluster *cmv1.Cluster, api Route53AwsApi, privateHostedZoneId string) PrivateHostedZoneRecord {
+	return PrivateHostedZoneRecord{
+		BaseDomain:          cluster.DNS().BaseDomain(),
+		ClusterName:         cluster.Name(),
+		PrivateHostedZoneId: privateHostedZoneId,
+		Prefix:              privateHostedZoneApiIntRecordPrefix,
+		Route53Client:       api,
+	}
+}
+
+func (p PrivateHostedZoneRecord) Validate(ctx context.Context) (string, error) {
 	if p.PrivateHostedZoneId == "" {
 		return "", errors.New("must specify a private hosted zone id")
 	}
@@ -172,29 +198,31 @@ func (p PrivateHostedZoneRecords) Validate(ctx context.Context) (string, error) 
 		return "", err
 	}
 
-	api, apiInt, apps := false, false, false
 	for _, record := range records.ResourceRecordSets {
-		if api && apiInt && apps {
-			return "", nil
-		}
-
-		switch *record.Name {
-		case fmt.Sprintf("api.%s.%s.", p.ClusterName, p.BaseDomain):
-			fmt.Println("found api")
-			api = true
-		case fmt.Sprintf("api-int.%s.%s.", p.ClusterName, p.BaseDomain):
-			fmt.Println("found api-int")
-			apiInt = true
-		case fmt.Sprintf("\\052.apps.%s.%s.", p.ClusterName, p.BaseDomain):
-			// \052 is ASCII for *
-			fmt.Println("found apps")
-			apps = true
+		if *record.Name == fmt.Sprintf("%s.%s.%s.", p.Prefix, p.ClusterName, p.BaseDomain) {
+			switch len(record.ResourceRecords) {
+			case 0:
+				return "", fmt.Errorf("found resource record for %s, but no resource records", p.Prefix)
+			case 1:
+				return *record.ResourceRecords[0].Value, nil
+			default:
+				return "", fmt.Errorf("found resource record for %s, but found %v resource records, expected 1", p.Prefix, len(record.ResourceRecords))
+			}
 		}
 	}
 
 	return "", fmt.Errorf("missing required records for api, api-int, or *.apps")
 }
 
-func (p PrivateHostedZoneRecords) Documentation() string {
-	return privateHostedZoneRecordsDescription
+func (p PrivateHostedZoneRecord) Documentation() string {
+	switch p.Prefix {
+	case privateHostedZoneAppsRecordPrefix:
+		return privateHostedZoneAppsRecordDescription
+	case privateHostedZoneApiRecordPrefix:
+		return privateHostedZoneApiRecordDescription
+	case privateHostedZoneApiIntRecordPrefix:
+		return privateHostedZoneApiIntRecordDescription
+	default:
+		return privateHostedZoneRecordsDescription
+	}
 }
