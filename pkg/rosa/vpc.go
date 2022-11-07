@@ -78,6 +78,10 @@ func (v Vpc) Documentation() string {
 	return vpcDescription
 }
 
+func (v Vpc) FilterValue() string {
+	return "VPC"
+}
+
 func (v Vpc) FindVpcId(ctx context.Context) (string, error) {
 	if v.Byovpc {
 		// For BYOVPC clusters, subnet ids are provided, so determine the VPC from the provided subnets

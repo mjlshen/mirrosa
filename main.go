@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
+	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
@@ -56,27 +58,52 @@ func ValidateAll(ctx context.Context, c *mirrosa.Client) error {
 	c.ClusterInfo.PrivateHostedZoneId = privateHzId
 
 	privateHzAppsRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
-	appsLB, err := c.ValidateComponent(ctx, privateHzAppsRecords)
+	appsLbDnsName, err := c.ValidateComponent(ctx, privateHzAppsRecords)
 	if err != nil {
 		fmt.Println(privateHzAppsRecords.Documentation())
 		return err
 	}
 
-	privateHzApiRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
-	apiLB, err := c.ValidateComponent(ctx, privateHzApiRecords)
+	privateHzApiRecords := rosa.NewPrivateHostedZoneApiRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	apiLbDnsName, err := c.ValidateComponent(ctx, privateHzApiRecords)
 	if err != nil {
 		fmt.Println(privateHzApiRecords.Documentation())
 		return err
 	}
 
-	privateHzApiIntRecords := rosa.NewPrivateHostedZoneAppsRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
-	apiIntLB, err := c.ValidateComponent(ctx, privateHzApiIntRecords)
+	privateHzApiIntRecords := rosa.NewPrivateHostedZoneApiIntRecord(c.Cluster, route53.NewFromConfig(c.AwsConfig), c.ClusterInfo.PrivateHostedZoneId)
+	apiIntLbDnsName, err := c.ValidateComponent(ctx, privateHzApiIntRecords)
 	if err != nil {
 		fmt.Println(privateHzApiIntRecords.Documentation())
 		return err
 	}
 
-	fmt.Println(appsLB, apiLB, apiIntLB)
+	apiLb := rosa.NewApiLoadBalancer(elb.NewFromConfig(c.AwsConfig), elbv2.NewFromConfig(c.AwsConfig), c.ClusterInfo.VpcId, apiLbDnsName)
+	apiLbSecurityGroupId, err := c.ValidateComponent(ctx, apiLb)
+	if err != nil {
+		fmt.Println(apiLb.Documentation())
+		return err
+	}
+
+	c.ClusterInfo.ApiLbSecurityGroupId = apiLbSecurityGroupId
+
+	apiIntLb := rosa.NewApiIntLoadBalancer(elb.NewFromConfig(c.AwsConfig), elbv2.NewFromConfig(c.AwsConfig), c.ClusterInfo.VpcId, apiIntLbDnsName)
+	apiIntLbSecurityGroupId, err := c.ValidateComponent(ctx, apiIntLb)
+	if err != nil {
+		fmt.Println(apiIntLb.Documentation())
+		return err
+	}
+
+	c.ClusterInfo.ApiIntLbSecurityGroupId = apiIntLbSecurityGroupId
+
+	appsLb := rosa.NewAppsLoadBalancer(elb.NewFromConfig(c.AwsConfig), elbv2.NewFromConfig(c.AwsConfig), c.ClusterInfo.VpcId, appsLbDnsName)
+	appsLbSecurityGroupId, err := c.ValidateComponent(ctx, appsLb)
+	if err != nil {
+		fmt.Println(apiIntLb.Documentation())
+		return err
+	}
+
+	c.ClusterInfo.AppsLbSecurityGroupId = appsLbSecurityGroupId
 
 	publicHz := rosa.NewPublicHostedZone(c.Cluster, route53.NewFromConfig(c.AwsConfig))
 	publicHzId, err := c.ValidateComponent(ctx, publicHz)

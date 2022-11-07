@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
@@ -36,7 +37,7 @@ const (
 	// \052 is ASCII for *
 	privateHostedZoneAppsRecordPrefix   = "\\052.apps"
 	privateHostedZoneApiRecordPrefix    = "api"
-	privateHostedZoneApiIntRecordPrefix = "api.int"
+	privateHostedZoneApiIntRecordPrefix = "api-int"
 )
 
 var _ mirrosa.Component = &PublicHostedZone{}
@@ -85,6 +86,10 @@ func (p PublicHostedZone) Documentation() string {
 	}
 
 	return publicHostedZoneDescription
+}
+
+func (p PublicHostedZone) FilterValue() string {
+	return "Route53 Public Hosted Zone"
 }
 
 // Ensure PrivateHostedZone implements mirrosa.Component
@@ -143,6 +148,10 @@ func (p PrivateHostedZone) Documentation() string {
 	return privateHostedZoneDescription
 }
 
+func (p PrivateHostedZone) FilterValue() string {
+	return "Route53 Private Hosted Zone"
+}
+
 type PrivateHostedZoneRecord struct {
 	BaseDomain          string
 	ClusterName         string
@@ -199,15 +208,14 @@ func (p PrivateHostedZoneRecord) Validate(ctx context.Context) (string, error) {
 	}
 
 	for _, record := range records.ResourceRecordSets {
-		if *record.Name == fmt.Sprintf("%s.%s.%s.", p.Prefix, p.ClusterName, p.BaseDomain) {
-			switch len(record.ResourceRecords) {
-			case 0:
-				return "", fmt.Errorf("found resource record for %s, but no resource records", p.Prefix)
-			case 1:
-				return *record.ResourceRecords[0].Value, nil
-			default:
-				return "", fmt.Errorf("found resource record for %s, but found %v resource records, expected 1", p.Prefix, len(record.ResourceRecords))
+		expectedRecord := fmt.Sprintf("%s.%s.%s.", p.Prefix, p.ClusterName, p.BaseDomain)
+		if *record.Name == expectedRecord {
+			// All expected records are A records
+			if record.Type != types.RRTypeA || record.AliasTarget == nil {
+				return "", fmt.Errorf("found no resource records for %s", expectedRecord)
 			}
+
+			return strings.TrimSuffix(*record.AliasTarget.DNSName, "."), nil
 		}
 	}
 
@@ -225,4 +233,13 @@ func (p PrivateHostedZoneRecord) Documentation() string {
 	default:
 		return privateHostedZoneRecordsDescription
 	}
+}
+
+func (p PrivateHostedZoneRecord) FilterValue() string {
+	name := p.Prefix
+	if p.Prefix == appsLoadBalancerPrefix {
+		name = "*.apps"
+	}
+
+	return fmt.Sprintf("Route53 Private Hosted Zone Record - %s", name)
 }

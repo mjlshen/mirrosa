@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/mjlshen/mirrosa/pkg/ocm"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
 )
 
@@ -43,6 +41,15 @@ type ClusterInfo struct {
 
 	// PrivateHostedZoneId is the AWS ID of the Private Route53 Hosted Zone of the cluster
 	PrivateHostedZoneId string
+
+	// AppsLbSecurityGroupId is the AWS ID of the cluster's *.apps load balancer
+	AppsLbSecurityGroupId string
+
+	// ApiLbSecurityGroupId is the AWS ID of the cluster's api load balancer
+	ApiLbSecurityGroupId string
+
+	// ApiIntLbSecurityGroupId is the AWS ID of the cluster's api.int load balancer
+	ApiIntLbSecurityGroupId string
 }
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
@@ -52,16 +59,13 @@ func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error
 	if err != nil {
 		return nil, err
 	}
+	defer ocmConn.Close()
 
 	cluster, err := ocm.GetCluster(ocmConn, clusterId)
 	if err != nil {
 		if err := ocmConn.Close(); err != nil {
 			return nil, err
 		}
-		return nil, err
-	}
-
-	if err := ocmConn.Close(); err != nil {
 		return nil, err
 	}
 
@@ -77,14 +81,24 @@ func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error
 		return nil, errors.New("mirrosa is only compatible with CCS clusters")
 	}
 
-	region := cluster.Region().ID()
-	if region == "" {
-		return nil, fmt.Errorf("empty region for cluster %s", clusterId)
+	token, err := ocm.GetToken(ocmConn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve ocm token: %w", err)
 	}
 
-	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	hiveShard, err := ocm.GetHiveShard(ocmConn, clusterId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get hive shard: %w", err)
+	}
+
+	backplaneUrl, err := ocm.GenerateBackplaneUrl(hiveShard)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate backplane url: %w", err)
+	}
+
+	cfg, err := ocm.GetCloudCredentials(ctx, backplaneUrl, clusterId, token)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
 
 	if infraName == "" {
