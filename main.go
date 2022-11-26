@@ -32,6 +32,7 @@ func main() {
 
 	if err := mirrosa.ValidateComponents(context.TODO(),
 		mirrosa.NewVpc(),
+		mirrosa.NewVpcEndpointService(),
 		mirrosa.NewPublicHostedZone(),
 		mirrosa.NewPrivateHostedZone()); err != nil {
 		log.Fatal(err)
