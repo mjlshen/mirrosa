@@ -1,10 +1,7 @@
-package rosa
+package mirrosa
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -28,18 +25,7 @@ type ElbAwsApi interface {
 type Route53AwsApi interface {
 	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
 	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
-	// TODO: This permission is not granted by the support policy
-	ListHostedZonesByVPC(ctx context.Context, params *route53.ListHostedZonesByVPCInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByVPCOutput, error)
 	ListResourceRecordSets(ctx context.Context, params *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
-}
-
-type RosaAWSClient interface {
-	// EC2 Functions
-	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
-	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
-	// Route53 Functions
-	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
-	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
 }
 
 type RosaClient struct {
@@ -47,10 +33,10 @@ type RosaClient struct {
 	Route53Client *route53.Client
 }
 
-func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) {
-	cfg, _ := config.LoadDefaultConfig(ctx, optFns...)
-	fmt.Println(cfg)
-
-	//test := elbv2.NewFromConfig(cfg)
-	//test.DescribeLoadBalancers()
-}
+//func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) {
+//	cfg, _ := config.LoadDefaultConfig(ctx, optFns...)
+//	fmt.Println(cfg)
+//
+//	//test := elbv2.NewFromConfig(cfg)
+//	//test.DescribeLoadBalancers()
+//}

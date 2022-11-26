@@ -4,14 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mjlshen/mirrosa/pkg/ocm"
-
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/mjlshen/mirrosa/pkg/ocm"
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
+	"go.uber.org/zap"
 )
 
 // Client holds relevant information about a ROSA cluster gleaned from OCM and an AwsApi to validate the cluster in AWS
 type Client struct {
+	log *zap.SugaredLogger
+
 	// Cluster holds a cluster object from OCM
 	Cluster *cmv1.Cluster
 
@@ -35,26 +39,11 @@ type ClusterInfo struct {
 
 	// VpcId is the AWS ID of the VPC the cluster is installed in
 	VpcId string
-
-	// PublicHostedZoneId is the AWS ID of the Public Route53 Hosted Zone of the cluster
-	PublicHostedZoneId string
-
-	// PrivateHostedZoneId is the AWS ID of the Private Route53 Hosted Zone of the cluster
-	PrivateHostedZoneId string
-
-	// AppsLbSecurityGroupId is the AWS ID of the cluster's *.apps load balancer
-	AppsLbSecurityGroupId string
-
-	// ApiLbSecurityGroupId is the AWS ID of the cluster's api load balancer
-	ApiLbSecurityGroupId string
-
-	// ApiIntLbSecurityGroupId is the AWS ID of the cluster's api.int load balancer
-	ApiIntLbSecurityGroupId string
 }
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
 // mirrosa client. Requires valid AWS and OCM credentials to be present beforehand.
-func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error) {
+func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string) (*Client, error) {
 	ocmConn, err := ocm.CreateConnection()
 	if err != nil {
 		return nil, err
@@ -71,14 +60,6 @@ func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error
 
 	if cluster.CloudProvider().ID() != "aws" {
 		return nil, fmt.Errorf("incompatible cloud provider: %s, mirrosa is only compatible with ROSA (AWS) clusters", cluster.CloudProvider().ID())
-	}
-
-	if cluster.Product().ID() != "rosa" && cluster.Product().ID() != "osd" {
-		return nil, fmt.Errorf("incompatible product type: %s, mirrosa is only compatible with ROSA clusters", cluster.Product().ID())
-	}
-
-	if !cluster.CCS().Enabled() {
-		return nil, errors.New("mirrosa is only compatible with CCS clusters")
 	}
 
 	token, err := ocm.GetToken(ocmConn)
@@ -101,28 +82,96 @@ func NewClient(ctx context.Context, clusterId, infraName string) (*Client, error
 		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
 
-	if infraName == "" {
-		infraName = cluster.InfraID()
-	}
-
-	if infraName == "" {
-		return nil, fmt.Errorf("unable to determine infra name from OCM, please specify with --infra-name")
-	}
-
 	c := &Client{
 		AwsConfig: cfg,
 		Cluster:   cluster,
 		ClusterInfo: &ClusterInfo{
-			Name:       cluster.Name(),
-			InfraName:  cluster.InfraID(),
-			BaseDomain: cluster.DNS().BaseDomain(),
+			Name: cluster.Name(),
 		},
+		log: logger,
 	}
 
 	return c, nil
 }
 
-// ValidateComponent wraps the Validate method on a specific Component
-func (c *Client) ValidateComponent(ctx context.Context, component Component) (string, error) {
-	return component.Validate(ctx)
+func NewRosaClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string) (*Client, error) {
+	c, err := NewClient(ctx, logger, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	if c.Cluster.Product().ID() != "rosa" && c.Cluster.Product().ID() != "osd" {
+		return nil, fmt.Errorf("incompatible product type: %s, mirrosa is only compatible with ROSA clusters", c.Cluster.Product().ID())
+	}
+
+	if !c.Cluster.CCS().Enabled() {
+		return nil, errors.New("mirrosa is only compatible with CCS clusters")
+	}
+
+	c.ClusterInfo.InfraName = c.Cluster.InfraID()
+	c.ClusterInfo.BaseDomain = c.Cluster.DNS().BaseDomain()
+
+	if err := c.FindVpcId(ctx); err != nil {
+		return nil, fmt.Errorf("failed to find vpc id: %w", err)
+	}
+
+	return c, nil
+}
+
+// FindVpcId determines c.ClusterInfo.VpcId by determining the AWS VPC ID of a cluster
+func (c *Client) FindVpcId(ctx context.Context) error {
+	ec2Client := ec2.NewFromConfig(c.AwsConfig)
+
+	if len(c.Cluster.AWS().SubnetIDs()) == 0 {
+		// Non-BYOVPC, use the cluster's infra name to find the VPC id of the cluster
+		resp, err := ec2Client.DescribeVpcs(ctx, &ec2.DescribeVpcsInput{
+			Filters: []types.Filter{
+				{
+					Name:   aws.String("tag:Name"),
+					Values: []string{fmt.Sprintf("%s-vpc", c.ClusterInfo.InfraName)},
+				},
+				{
+					Name:   aws.String(fmt.Sprintf("tag:kubernetes.io/cluster/%s", c.ClusterInfo.InfraName)),
+					Values: []string{"owned"},
+				},
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to describe vpc by tag: %w", err)
+		}
+
+		switch len(resp.Vpcs) {
+		case 0:
+			return fmt.Errorf("no VPCs found with expected Name tag: %s", c.ClusterInfo.InfraName)
+		case 1:
+			c.ClusterInfo.VpcId = *resp.Vpcs[0].VpcId
+			return nil
+		default:
+			return fmt.Errorf("multiple VPCs found with the expected Name tag: %s", c.ClusterInfo.InfraName)
+		}
+	} else {
+		// BYOVPC, use the provided subnets to find the VPC id of the cluster
+		resp, err := ec2Client.DescribeSubnets(ctx, &ec2.DescribeSubnetsInput{SubnetIds: c.Cluster.AWS().SubnetIDs()})
+		if err != nil {
+			return fmt.Errorf("failed to find subnets by id: %w", err)
+		}
+
+		if len(resp.Subnets) == 0 {
+			return fmt.Errorf("no subnets found for ids %v: %w", c.Cluster.AWS().SubnetIDs(), err)
+		}
+
+		c.ClusterInfo.VpcId = *resp.Subnets[0].VpcId
+		return nil
+	}
+}
+
+// ValidateComponents wraps the Validate method on one or many Component(s)
+func (c *Client) ValidateComponents(ctx context.Context, components ...Component) error {
+	for _, component := range components {
+		if err := component.Validate(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

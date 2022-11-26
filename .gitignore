@@ -1,2 +1,6 @@
-.idea
 mirrosa
+
+# Unignore all dirs
+!*/
+
+.idea
