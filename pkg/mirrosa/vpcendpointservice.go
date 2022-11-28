@@ -11,7 +11,7 @@ import (
 )
 
 const vpceServiceDescription = "A PrivateLink ROSA cluster has a VPC Endpoint Service which allows Hive to connect" +
-	" to the cluster over AWS' internal network (PrivateLink)."
+	" to the cluster over AWS' internal network (PrivateLink), used for things like backplane and SyncSets."
 
 var _ Component = &VpcEndpointService{}
 
