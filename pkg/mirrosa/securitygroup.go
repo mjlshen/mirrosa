@@ -99,6 +99,7 @@ func (s SecurityGroup) Validate(ctx context.Context) error {
 		return err
 	}
 
+	// TODO: Validate more rules?
 	expectedMasterRules := map[string]securityGroupRule{
 		"etcd": {
 			CidrIpv4:   s.MachineCIDR,
