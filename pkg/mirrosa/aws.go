@@ -9,11 +9,13 @@ import (
 )
 
 type Ec2AwsApi interface {
-	DescribeSubnets(ctx context.Context, params *ec2.DescribeSubnetsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeSubnetsOutput, error)
-	DescribeVpcs(ctx context.Context, params *ec2.DescribeVpcsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcsOutput, error)
+	ec2.DescribeSecurityGroupsAPIClient
+	ec2.DescribeSecurityGroupRulesAPIClient
+	ec2.DescribeSubnetsAPIClient
+	ec2.DescribeVpcsAPIClient
 	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
+	ec2.DescribeVpcEndpointConnectionsAPIClient
 	DescribeVpcEndpointServices(ctx context.Context, params *ec2.DescribeVpcEndpointServicesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointServicesOutput, error)
-	DescribeVpcEndpointConnections(ctx context.Context, params *ec2.DescribeVpcEndpointConnectionsInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointConnectionsOutput, error)
 }
 
 type ElbV2AwsApi interface {
