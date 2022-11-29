@@ -38,7 +38,7 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 		return nil
 	}
 
-	v.log.Info("searching for VPC Endpoint Service")
+	v.log.Infof("searching for PrivateLink VPC Endpoint Service: %s-vpc-endpoint-service", v.InfraName)
 	var serviceId string
 	resp, err := v.Ec2Client.DescribeVpcEndpointServices(ctx, &ec2.DescribeVpcEndpointServicesInput{
 		Filters: []types.Filter{
@@ -87,7 +87,7 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 	case 0:
 		return fmt.Errorf("no available VPC Endpoint connections found for %s", serviceId)
 	case 1:
-		v.log.Infof("found accepted VPC Endpoint connection for %s", serviceId)
+		v.log.Infof("validated that one accepted VPC Endpoint connection for %s exists", serviceId)
 		return nil
 	default:
 		return fmt.Errorf("multiple available VPC Endpoint connections found for %s", serviceId)
