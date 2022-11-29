@@ -31,16 +31,3 @@ type Route53AwsApi interface {
 	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
 	ListResourceRecordSets(ctx context.Context, params *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
 }
-
-type RosaClient struct {
-	Ec2Client     *ec2.Client
-	Route53Client *route53.Client
-}
-
-//func NewClient(ctx context.Context, optFns ...func(*config.LoadOptions) error) {
-//	cfg, _ := config.LoadDefaultConfig(ctx, optFns...)
-//	fmt.Println(cfg)
-//
-//	//test := elbv2.NewFromConfig(cfg)
-//	//test.DescribeLoadBalancers()
-//}
