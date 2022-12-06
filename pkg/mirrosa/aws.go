@@ -2,6 +2,7 @@ package mirrosa
 
 import (
 	"context"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
@@ -9,6 +10,7 @@ import (
 )
 
 type Ec2AwsApi interface {
+	DescribeInstances(ctx context.Context, params *ec2.DescribeInstancesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeInstancesOutput, error)
 	ec2.DescribeSecurityGroupsAPIClient
 	ec2.DescribeSecurityGroupRulesAPIClient
 	ec2.DescribeSubnetsAPIClient
