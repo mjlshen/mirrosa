@@ -16,11 +16,16 @@ const vpcDescription = "A ROSA cluster's VPC can be built by the installer or an
 // Ensure Vpc implements Component
 var _ Component = &Vpc{}
 
+// MirrosaVpcAPI represents the part of the AWS EC2 API that is needed to validate a Vpc
+type MirrosaVpcAPI interface {
+	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
+}
+
 type Vpc struct {
 	log *zap.SugaredLogger
 	Id  string
 
-	Ec2Client Ec2AwsApi
+	Ec2Client MirrosaVpcAPI
 }
 
 func (c *Client) NewVpc() Vpc {

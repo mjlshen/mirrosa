@@ -13,7 +13,6 @@ type Ec2AwsApi interface {
 	ec2.DescribeSecurityGroupRulesAPIClient
 	ec2.DescribeSubnetsAPIClient
 	ec2.DescribeVpcsAPIClient
-	DescribeVpcAttribute(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
 	ec2.DescribeVpcEndpointConnectionsAPIClient
 	DescribeVpcEndpointServices(ctx context.Context, params *ec2.DescribeVpcEndpointServicesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointServicesOutput, error)
 }
