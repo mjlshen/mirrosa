@@ -60,7 +60,8 @@ func main() {
 		mirrosa.NewVpcEndpointService(),
 		mirrosa.NewPublicHostedZone(),
 		mirrosa.NewPrivateHostedZone()); err != nil {
-		sugared.Fatal(err)
+		sugared.Error(err)
+		os.Exit(1)
 	}
 
 	sugared.Infof("mirrosa: \"%s is the fairest of them all!\"", mirrosa.ClusterInfo.Name)

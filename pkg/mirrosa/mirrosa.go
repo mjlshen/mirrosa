@@ -169,7 +169,7 @@ func (c *Client) FindVpcId(ctx context.Context) error {
 func (c *Client) ValidateComponents(ctx context.Context, components ...Component) error {
 	for _, component := range components {
 		if err := component.Validate(ctx); err != nil {
-			return err
+			return fmt.Errorf("%s: %w", component.Documentation(), err)
 		}
 	}
 
