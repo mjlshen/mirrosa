@@ -20,7 +20,6 @@ import (
 
 const (
 	ClusterServiceClusterSearch   = "id = '%s' or name = '%s' or external_id = '%s'"
-	CloudProviderAws              = "aws"
 	backplaneCloudCredentialsPath = "/backplane/cloud/credentials"
 )
 
@@ -161,17 +160,4 @@ func GenerateBackplaneUrl(hiveShardUrl *url.URL) (*url.URL, error) {
 	backplaneUrl.Host = strings.Replace(backplaneUrl.Hostname(), "api", "api-backplane.apps", 1)
 
 	return backplaneUrl, nil
-}
-
-// IsClusterByovpc returns true if this cluster was installed into an existing VPC
-func IsClusterByovpc(cluster *cmv1.Cluster) bool {
-	if cluster.CloudProvider().ID() != CloudProviderAws {
-		return false
-	}
-
-	if len(cluster.AWS().SubnetIDs()) > 0 {
-		return true
-	}
-
-	return false
 }
