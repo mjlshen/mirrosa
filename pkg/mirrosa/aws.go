@@ -3,8 +3,6 @@ package mirrosa
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	elb "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
-	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 )
 
@@ -15,14 +13,6 @@ type Ec2AwsApi interface {
 	ec2.DescribeVpcsAPIClient
 	ec2.DescribeVpcEndpointConnectionsAPIClient
 	DescribeVpcEndpointServices(ctx context.Context, params *ec2.DescribeVpcEndpointServicesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointServicesOutput, error)
-}
-
-type ElbV2AwsApi interface {
-	DescribeLoadBalancers(ctx context.Context, params *elbv2.DescribeLoadBalancersInput, optFns ...func(*elbv2.Options)) (*elbv2.DescribeLoadBalancersOutput, error)
-}
-
-type ElbAwsApi interface {
-	DescribeLoadBalancers(ctx context.Context, params *elb.DescribeLoadBalancersInput, optFns ...func(*elb.Options)) (*elb.DescribeLoadBalancersOutput, error)
 }
 
 type Route53AwsApi interface {
