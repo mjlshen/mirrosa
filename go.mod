@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.75.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.25.1
 	github.com/openshift-online/ocm-cli v0.1.64
-	github.com/openshift-online/ocm-sdk-go v0.1.287
+	github.com/openshift-online/ocm-sdk-go v0.1.299
 	go.uber.org/zap v1.24.0
 )
 
