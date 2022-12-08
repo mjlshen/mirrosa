@@ -20,12 +20,12 @@ func (m mockMirrosaVpcAPI) DescribeVpcAttribute(ctx context.Context, params *ec2
 func TestVpc_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		client  func(t *testing.T) MirrosaVpcAPI
+		client  func(t *testing.T) MirrosaVpcAPIClient
 		wantErr bool
 	}{
 		{
 			name: "enableDnsSupport and enableDnsHostnames true",
-			client: func(t *testing.T) MirrosaVpcAPI {
+			client: func(t *testing.T) MirrosaVpcAPIClient {
 				return mockMirrosaVpcAPI(func(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(options *ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error) {
 					t.Helper()
 					if params.Attribute == types.VpcAttributeNameEnableDnsHostnames {
@@ -49,7 +49,7 @@ func TestVpc_Validate(t *testing.T) {
 		},
 		{
 			name: "enableDnsSupport false",
-			client: func(t *testing.T) MirrosaVpcAPI {
+			client: func(t *testing.T) MirrosaVpcAPIClient {
 				return mockMirrosaVpcAPI(func(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(options *ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error) {
 					t.Helper()
 					if params.Attribute == types.VpcAttributeNameEnableDnsHostnames {

@@ -11,8 +11,6 @@ type Ec2AwsApi interface {
 	ec2.DescribeSecurityGroupRulesAPIClient
 	ec2.DescribeSubnetsAPIClient
 	ec2.DescribeVpcsAPIClient
-	ec2.DescribeVpcEndpointConnectionsAPIClient
-	DescribeVpcEndpointServices(ctx context.Context, params *ec2.DescribeVpcEndpointServicesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointServicesOutput, error)
 }
 
 type Route53AwsApi interface {
