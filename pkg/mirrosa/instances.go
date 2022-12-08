@@ -11,24 +11,26 @@ import (
 	"go.uber.org/zap"
 )
 
-const instanceDescription = "A ROSA cluster has ec2 instances running"
+const instanceDescription = `A ROSA cluster must have the followings
+- 3 masters running
+- at least 2 infras running for single-AZ, 3 infras for multi-AZ`
 
 var _ Component = &Instances{}
 
 type Instances struct {
-	log         *zap.SugaredLogger
-	InfraName   string
-	PrivateLink bool
+	log       *zap.SugaredLogger
+	InfraName string
+	MultiAZ   bool
 
 	Ec2Client Ec2AwsApi
 }
 
 func (c *Client) NewInstances() Instances {
 	return Instances{
-		log:         c.log,
-		InfraName:   c.ClusterInfo.InfraName,
-		PrivateLink: c.Cluster.AWS().PrivateLink(),
-		Ec2Client:   ec2.NewFromConfig(c.AwsConfig),
+		log:       c.log,
+		InfraName: c.ClusterInfo.InfraName,
+		MultiAZ:   c.Cluster.MultiAZ(),
+		Ec2Client: ec2.NewFromConfig(c.AwsConfig),
 	}
 }
 
@@ -94,9 +96,12 @@ func (i Instances) Validate(ctx context.Context) error {
 		}
 	}
 
-	// Check if there are at least 2 infra nodes
-	if len(infraNodes) < 2 {
-		return fmt.Errorf("there should be at least 2 infra nodes belong to the cluster")
+	if i.MultiAZ && len(infraNodes) < 3 {
+		return fmt.Errorf("there should be at least 3 infra nodes for multi-AZ clusters")
+	}
+
+	if !i.MultiAZ && len(infraNodes) < 2 {
+		return fmt.Errorf("there should be at least 2 infra nodes for single-AZ clusters")
 	}
 
 	// Check if infras are running
