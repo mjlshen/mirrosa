@@ -15,12 +15,18 @@ const vpceServiceDescription = "A PrivateLink ROSA cluster has a VPC Endpoint Se
 
 var _ Component = &VpcEndpointService{}
 
+// MirrosaVpcEndpointServiceAPIClient is a client that implements what's needed to validate a VpcEndpointService
+type MirrosaVpcEndpointServiceAPIClient interface {
+	DescribeVpcEndpointServices(ctx context.Context, params *ec2.DescribeVpcEndpointServicesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeVpcEndpointServicesOutput, error)
+	ec2.DescribeVpcEndpointConnectionsAPIClient
+}
+
 type VpcEndpointService struct {
 	log         *zap.SugaredLogger
 	InfraName   string
 	PrivateLink bool
 
-	Ec2Client Ec2AwsApi
+	Ec2Client MirrosaVpcEndpointServiceAPIClient
 }
 
 func (c *Client) NewVpcEndpointService() VpcEndpointService {
