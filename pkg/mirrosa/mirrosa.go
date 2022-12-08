@@ -67,7 +67,7 @@ func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string)
 		return nil, fmt.Errorf("failed to retrieve ocm token: %w", err)
 	}
 
-	hiveShard, err := ocm.GetHiveShard(ocmConn, clusterId)
+	hiveShard, err := ocm.GetHiveShard(ocmConn, cluster.ID())
 	if err != nil {
 		return nil, fmt.Errorf("failed to get hive shard: %w", err)
 	}
@@ -77,7 +77,7 @@ func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string)
 		return nil, fmt.Errorf("failed to generate backplane url: %w", err)
 	}
 
-	cfg, err := ocm.GetCloudCredentials(ctx, backplaneUrl, clusterId, token)
+	cfg, err := ocm.GetCloudCredentials(ctx, backplaneUrl, cluster.ID(), token)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
