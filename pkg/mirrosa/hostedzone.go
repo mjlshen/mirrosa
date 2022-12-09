@@ -31,6 +31,12 @@ const (
 // Ensure PublicHostedZone implements mirrosa.Component
 var _ Component = &PublicHostedZone{}
 
+type Route53AwsApi interface {
+	GetHostedZone(ctx context.Context, params *route53.GetHostedZoneInput, optFns ...func(*route53.Options)) (*route53.GetHostedZoneOutput, error)
+	ListHostedZonesByName(ctx context.Context, params *route53.ListHostedZonesByNameInput, optFns ...func(*route53.Options)) (*route53.ListHostedZonesByNameOutput, error)
+	ListResourceRecordSets(ctx context.Context, params *route53.ListResourceRecordSetsInput, optFns ...func(*route53.Options)) (*route53.ListResourceRecordSetsOutput, error)
+}
+
 type PublicHostedZone struct {
 	log         *zap.SugaredLogger
 	BaseDomain  string
