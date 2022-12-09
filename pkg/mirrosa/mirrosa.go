@@ -142,12 +142,12 @@ func (c *Client) FindVpcId(ctx context.Context) error {
 
 		switch len(resp.Vpcs) {
 		case 0:
-			return fmt.Errorf("no VPCs found with expected Name tag: %s", c.ClusterInfo.InfraName)
+			return fmt.Errorf("no VPCs found with expected Name tag: %s-vpc", c.ClusterInfo.InfraName)
 		case 1:
 			c.ClusterInfo.VpcId = *resp.Vpcs[0].VpcId
 			return nil
 		default:
-			return fmt.Errorf("multiple VPCs found with the expected Name tag: %s", c.ClusterInfo.InfraName)
+			return fmt.Errorf("multiple VPCs found with the expected Name tag: %s-vpc", c.ClusterInfo.InfraName)
 		}
 	} else {
 		// BYOVPC, use the provided subnets to find the VPC id of the cluster

@@ -60,7 +60,9 @@ func main() {
 		mirrosa.NewSecurityGroup(),
 		mirrosa.NewVpcEndpointService(),
 		mirrosa.NewPublicHostedZone(),
-		mirrosa.NewPrivateHostedZone()); err != nil {
+		mirrosa.NewPrivateHostedZone(),
+		mirrosa.NewApiLoadBalancer(),
+	); err != nil {
 		sugared.Error(err)
 		os.Exit(1)
 	}
