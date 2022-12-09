@@ -1,7 +1,6 @@
 # mirrosa
 
-Ever wondered if AWS infrastructure around a ROSA cluster has been modified? Wonder no more!
-Given a cluster id, mirrosa will let you know if a ROSA cluster is truly the fairest of them all.
+Ever wondered if AWS infrastructure around a ROSA cluster has been modified? Wonder no more! `mirrosa` will let you know if a ROSA cluster is truly the fairest of them all.
 
 ## Installation
 
@@ -22,22 +21,21 @@ go build .
 
 ## Usage
 
+Validate of a cluster's AWS configuration using a cluster's name, internal ID, or external ID:
+
 ```bash
-mirrosa -cluster-id "${CLUSTER_ID}"
+mirrosa -cluster-id mshen-sts
 ```
 
 ## How it works
 
-The goal of mirrosa is to essentially walk this graph to validate specific components of ROSA clusters. It collects information about a cluster from OCM and then uses ocm-backplane to build an AWS client in-memory to start validating!
+The goal of mirrosa is to essentially walk this graph to validate specific components of ROSA clusters. It collects information about a cluster from OCM and then uses ocm-backplane to build an AWS client in-memory to start validating! It's main purpose is to be a helpful learning and troubleshooting tool for SREs, so when adding features try to keep the [AWS permissions available](https://github.com/openshift/managed-cluster-config/blob/master/resources/sts/4.11/sts_support_permission_policy.json) for SREs into account.
 
 ```mermaid
 graph TD;
   C[OCM ClusterId]-->P[PrivateLink]
   P-->VPCES[VPC Endpoint Service]
-  C-->STS
   C-->D[DNS Basedomain]
-  C-->BYOVPC
-  BYOVPC-->Subnet
   D-->R[Route53 Private Hosted Zone]
   D-->RPub[Route53 Public Hosted Zone]
   R-->APILB[api LB]
@@ -45,7 +43,8 @@ graph TD;
   R-->V[VPC ID]
   V-->Subnet[SubnetIDs]
   Subnet-->RT[Route Tables]
-  V-->SG[Security Groups]
+  V-->EC[EC2 Instances]
+  EC-->SG[Security Groups]
   V-->VPCE[S3 VPC Endpoint]
   V-->IGW[Internet Gateway]
   RT-->NAT[NAT Gateway]
@@ -59,7 +58,8 @@ type Component interface {
 	// FilterValue returns the name of the component to implement the github.com/charmbracelet/bubbles/list Item interface
 	FilterValue() string
 
-	// Documentation returns a short description of the component's expected configuration
+	// Documentation returns a thorough description of the component's expected configuration.
+	// It should allow a new user of ROSA to understand what the expected state is and why it should be that way.
 	Documentation() string
 
 	// Validate checks a component for any misconfiguration and returns any error
@@ -69,6 +69,8 @@ type Component interface {
 
 ## Future Work
 
-- More in-depth validation of non-BYOVPC clusters, e.g. NAT Gateway, IGW, Subnet Route tables
-- More in-depth validation of securitiy group rules
-- A TUI UX for fun with charmbracelet, which can help users learn about ROSA clusters beyond just validating them
+Check out the issues and [CONTRIBUTING.md](CONTRIBUTING.md)!
+
+### Long Term
+
+- A TUI UX for fun with charmbracelet, which can help users learn about ROSA clusters interactively beyond just validating them
