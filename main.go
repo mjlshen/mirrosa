@@ -55,13 +55,13 @@ func main() {
 	sugared.Infof("%s: \"Mirror mirror on the wall, who's the fairest of them all?\"", mirrosa.ClusterInfo.Name)
 
 	if err := mirrosa.ValidateComponents(context.TODO(),
-		mirrosa.NewInstances(),
 		mirrosa.NewVpc(),
 		mirrosa.NewSecurityGroup(),
 		mirrosa.NewVpcEndpointService(),
 		mirrosa.NewPublicHostedZone(),
 		mirrosa.NewPrivateHostedZone(),
 		mirrosa.NewApiLoadBalancer(),
+		mirrosa.NewInstances(),
 	); err != nil {
 		sugared.Error(err)
 		os.Exit(1)
