@@ -20,8 +20,8 @@ const (
 		"\n  - An internal (-int) NLB to balance traffic within the cluster's VPC."
 )
 
-// elb represents the expected state of an Elastic Load Balancer in AWS
-type elb struct {
+// mirrosaElb represents the expected state of an Elastic Load Balancer in AWS
+type mirrosaElb struct {
 	name              string
 	expectedListeners map[string]listener
 }
@@ -143,10 +143,10 @@ func (n NetworkLoadBalancer) FilterValue() string {
 }
 
 // getExpectedNLBs returns a map of expected elb instances given a NetworkLoadBalancer Component
-func (n NetworkLoadBalancer) getExpectedNLBs() map[string]elb {
-	expected := map[string]elb{}
+func (n NetworkLoadBalancer) getExpectedNLBs() map[string]mirrosaElb {
+	expected := map[string]mirrosaElb{}
 
-	expected["api-int"] = elb{
+	expected["api-int"] = mirrosaElb{
 		name: fmt.Sprintf("%s-int", n.InfraName),
 		expectedListeners: map[string]listener{
 			"etcd": {
@@ -164,7 +164,7 @@ func (n NetworkLoadBalancer) getExpectedNLBs() map[string]elb {
 
 	// TODO: Handle non-STS, where the external NLB is optional if it is a private cluster
 	if !n.PrivateLink && n.Sts {
-		expected["api-ext"] = elb{
+		expected["api-ext"] = mirrosaElb{
 			name: fmt.Sprintf("%s-ext", n.InfraName),
 			expectedListeners: map[string]listener{
 				"kube-apiserver": {
