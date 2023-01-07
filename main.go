@@ -56,6 +56,7 @@ func main() {
 
 	if err := mirrosa.ValidateComponents(context.TODO(),
 		mirrosa.NewVpc(),
+		mirrosa.NewDhcpOptions(),
 		mirrosa.NewSecurityGroup(),
 		mirrosa.NewVpcEndpointService(),
 		mirrosa.NewPublicHostedZone(),

@@ -48,7 +48,6 @@ func (v Vpc) Validate(ctx context.Context) error {
 		return err
 	}
 
-	// Make sure dnsHostname's enableDnsHostnames attribute is true
 	if !*dnsHostnames.EnableDnsHostnames.Value {
 		return fmt.Errorf("enableDnsHostnames is false for VPC: %s", v.Id)
 	}
@@ -62,7 +61,6 @@ func (v Vpc) Validate(ctx context.Context) error {
 		return err
 	}
 
-	// Repeat for enableDnsSupport
 	if !*dnsSupport.EnableDnsSupport.Value {
 		return fmt.Errorf("enableDnsSupport is false for VPC: %s", v.Id)
 	}
