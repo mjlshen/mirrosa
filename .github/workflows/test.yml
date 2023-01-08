@@ -1,6 +1,10 @@
 name: CI
 on:
-  - push
+  push:
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
 jobs:
   test:
     permissions:
