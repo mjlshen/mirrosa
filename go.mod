@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.26.0
 	github.com/openshift-online/ocm-cli v0.1.65
-	github.com/openshift-online/ocm-sdk-go v0.1.305
+	github.com/openshift-online/ocm-sdk-go v0.1.306
 	go.uber.org/zap v1.24.0
 )
 
