@@ -1,0 +1,33 @@
+name: Release
+on: 
+  - workflow_dispatch
+jobs:
+  sign:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: 'Set up Go'
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: 'Build'
+        run: CGO_ENABLED=0 go build .
+
+      - name: 'Install Cosign'
+        uses: sigstore/cosign-installer@v2.8.1
+
+      - name: 'Authenticate to GCP'
+        uses: google-github-actions/auth@v1.0.0
+        with:
+          workload_identity_provider: 'projects/985030810135/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'githubaction@mirrosa.iam.gserviceaccount.com'
+
+      - name: 'Sign'
+        run: cosign sign-blob --key gcpkms://projects/mirrosa/locations/us/keyRings/signing/cryptoKeys/mirrosa mirrosa
