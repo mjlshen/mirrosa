@@ -1,16 +1,58 @@
 name: Release
-on: 
-  - workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'tag of the draft release'
+        required: true
+        type: string
+env:
+  workload_identity_provider: 'projects/985030810135/locations/global/workloadIdentityPools/github/providers/github'
+  service_account: 'githubaction@mirrosa.iam.gserviceaccount.com'
+  key: 'gcpkms://projects/mirrosa/locations/us/keyRings/signing/cryptoKeys/mirrosa'
 jobs:
-  sign:
+  fetch_public_key:
     permissions:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: 'Install Cosign'
+        uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # v2.8.1
+
+      - name: 'Authenticate to GCP'
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
-          fetch-depth: 1
+          workload_identity_provider: ${{ env.workload_identity_provider }}
+          service_account: ${{ env.service_account }}
+
+      - name: 'Sign'
+        run: cosign public-key --key $key --outfile signing.pub
+
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: 'signing.pub'
+          path: 'signing.pub'
+          retention-days: 1
+
+  build_and_sign:
+    needs: 'fetch_public_key'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goarch:
+          - 'amd64'
+          - 'arm64'
+        goos:
+          - 'darwin'
+          - 'linux'
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
       - name: 'Set up Go'
         uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
@@ -20,7 +62,14 @@ jobs:
           cache: true
 
       - name: 'Build'
-        run: CGO_ENABLED=0 go build .
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -trimpath -o mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} .
+      
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
+          retention-days: 1
 
       - name: 'Install Cosign'
         uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # v2.8.1
@@ -28,8 +77,45 @@ jobs:
       - name: 'Authenticate to GCP'
         uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
-          workload_identity_provider: 'projects/985030810135/locations/global/workloadIdentityPools/github/providers/github'
-          service_account: 'githubaction@mirrosa.iam.gserviceaccount.com'
+          workload_identity_provider: ${{ env.workload_identity_provider }}
+          service_account: ${{ env.service_account }}
+      
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: 'signing.pub'
 
       - name: 'Sign'
-        run: cosign sign-blob --key gcpkms://projects/mirrosa/locations/us/keyRings/signing/cryptoKeys/mirrosa mirrosa
+        run: |
+          cosign sign-blob --key $key mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} --output-signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
+          cosign verify-blob --key signing.pub --signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
+
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
+          path: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
+          retention-days: 1
+
+  release:
+    needs:
+      - 'fetch_public_key'
+      - 'build_and_sign'
+    permissions:
+      contents: 'write'
+    runs-on: ubuntu-latest
+    steps:
+      # If the name input parameter is not provided, all artifacts will be downloaded. 
+      # To differentiate between downloaded artifacts, a directory denoted by the artifacts name will be created for each individual artifact.
+      # i.e. signing.pub will be in release_artifacts/signing.pub/signing.pub
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          path: 'release_artifacts'
+      
+      - name: 'Release'
+        uses: "softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844" # v0.1.15
+        with:
+          name: "${{ inputs.tag }}"
+          draft: true
+          generate_release_notes: true
+          token: "${{ github.token }}"
+          files: |
+            release_artifacts/*/*
