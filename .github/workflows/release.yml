@@ -8,23 +8,25 @@ jobs:
       id-token: 'write'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           fetch-depth: 1
 
       - name: 'Set up Go'
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@6edd4406fa81c3da01a34fa6f6343087c207a568 # v3.5.0
         with:
-          go-version: 1.19
+          go-version: '1.19'
+          check-latest: true
+          cache: true
 
       - name: 'Build'
         run: CGO_ENABLED=0 go build .
 
       - name: 'Install Cosign'
-        uses: sigstore/cosign-installer@v2.8.1
+        uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # v2.8.1
 
       - name: 'Authenticate to GCP'
-        uses: google-github-actions/auth@v1.0.0
+        uses: google-github-actions/auth@ef5d53e30bbcd8d0836f4288f5e50ff3e086997d # v1.0.0
         with:
           workload_identity_provider: 'projects/985030810135/locations/global/workloadIdentityPools/github/providers/github'
           service_account: 'githubaction@mirrosa.iam.gserviceaccount.com'
