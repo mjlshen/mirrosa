@@ -58,9 +58,8 @@ func GetCluster(conn *sdk.Connection, clusterId string) (*cmv1.Cluster, error) {
 }
 
 // GetToken retrieves the OCM token used to create the connection
-func GetToken(conn *sdk.Connection) (string, error) {
-	// TODO: Consider conn.TokensContext
-	token, _, err := conn.Tokens()
+func GetToken(ctx context.Context, conn *sdk.Connection) (string, error) {
+	token, _, err := conn.TokensContext(ctx)
 	return strings.TrimSuffix(token, "\n"), err
 }
 

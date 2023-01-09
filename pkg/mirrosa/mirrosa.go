@@ -62,7 +62,7 @@ func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string)
 		return nil, fmt.Errorf("incompatible cloud provider: %s, mirrosa is only compatible with ROSA (AWS) clusters", cluster.CloudProvider().ID())
 	}
 
-	token, err := ocm.GetToken(ocmConn)
+	token, err := ocm.GetToken(ctx, ocmConn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve ocm token: %w", err)
 	}
