@@ -4,14 +4,18 @@ Ever wondered if AWS infrastructure around a ROSA cluster has been modified? Won
 
 ## Installation
 
+For Linux and macOS binaries see the [GitHub release assets](https://github.com/mjlshen/mirrosa/releases/latest).
+
+Release binaries are signed using [cosign](https://github.com/sigstore/cosign) and can be verified like:
+
 ```bash
-go install github.com/mjlshen/mirrosa
+cosign verify-blob --key signing.pub --signature mirrosa_darwin_arm64.sig mirrosa_darwin_arm64
 ```
 
-or building from source
+## Developer Installation
 
 ```bash
-go build .
+go install github.com/mjlshen/mirrosa
 ```
 
 ## Prerequisites
@@ -47,6 +51,7 @@ graph TD;
   EC-->SG[Security Groups]
   V-->VPCE[S3 VPC Endpoint]
   V-->IGW[Internet Gateway]
+  V-->DHCP[DHCP Options]
   RT-->NAT[NAT Gateway]
 ```
 
