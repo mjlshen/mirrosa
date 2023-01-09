@@ -30,10 +30,6 @@ func main() {
 	defer logger.Sync()
 	sugared := logger.Sugar()
 
-	if *clusterId == "" {
-		panic("cluster id must not be empty")
-	}
-
 	if info, ok := debug.ReadBuildInfo(); ok {
 		sugared.Debugf("Go Version: %s", info.GoVersion)
 		for _, setting := range info.Settings {
@@ -44,6 +40,11 @@ func main() {
 				sugared.Debugf("From: %s", setting.Value)
 			}
 		}
+	}
+
+	if *clusterId == "" {
+		sugared.Fatal("cluster id must not be empty")
+		os.Exit(1)
 	}
 
 	mirrosa, err := mirrosa.NewRosaClient(context.TODO(), sugared, *clusterId)
