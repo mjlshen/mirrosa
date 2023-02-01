@@ -11,18 +11,22 @@ import (
 	"go.uber.org/zap"
 )
 
-const instanceDescription = `A ROSA cluster must have the followings
-- 3 masters running
-- at least 2 infras running for single-AZ, 3 infras for multi-AZ`
+const instanceDescription = `A ROSA cluster must have the following:
+- 3 control plane instances running
+- at least 2 infra instances running for single-AZ, 3 infra instances for multi-AZ`
 
 var _ Component = &Instances{}
+
+type MirrosaInstancesAPIClient interface {
+	ec2.DescribeInstancesAPIClient
+}
 
 type Instances struct {
 	log       *zap.SugaredLogger
 	InfraName string
 	MultiAZ   bool
 
-	Ec2Client Ec2AwsApi
+	Ec2Client MirrosaInstancesAPIClient
 }
 
 func (c *Client) NewInstances() Instances {
@@ -61,7 +65,7 @@ func (i Instances) Validate(ctx context.Context) error {
 	}
 
 	// MASTER NODES VALIDATIONS
-	i.log.Info("validating cluster's master nodes")
+	i.log.Info("validating cluster's control plane instances")
 	var masters []types.Instance
 	masterPattern := fmt.Sprintf("%s-master", i.InfraName)
 	for _, v := range instances {
@@ -74,18 +78,24 @@ func (i Instances) Validate(ctx context.Context) error {
 
 	// Each cluster has 3 master nodes by default - immutable
 	if len(masters) != 3 {
-		return fmt.Errorf("there should be 3 masters belong to the cluster")
+		return fmt.Errorf("there should be 3 control plane instances, found %d", len(masters))
 	}
 
 	// Check if masters are running
 	for _, v := range masters {
 		if v.State.Name != types.InstanceStateNameRunning {
-			return fmt.Errorf("found non running master instance: %s", *v.InstanceId)
+			return fmt.Errorf("found non running control plane instance: %s", *v.InstanceId)
 		}
+
+		if len(v.SecurityGroups) != 1 {
+			return fmt.Errorf("one security group should be attached to %s: (%s-master-sg), got %d", *v.InstanceId, i.InfraName, len(v.SecurityGroups))
+		}
+
+		// TODO: Check if the security group is the correct one, with tag "Name: ${infra_name}-master-sg"
 	}
 
 	// INFRA NODES VALIDATIONS
-	i.log.Info("validating cluster's infra nodes")
+	i.log.Info("validating cluster's infra instances")
 	var infraNodes []types.Instance
 	infraPattern := fmt.Sprintf("%s-infra", i.InfraName)
 	for _, v := range instances {
@@ -97,22 +107,28 @@ func (i Instances) Validate(ctx context.Context) error {
 	}
 
 	if i.MultiAZ && len(infraNodes) < 3 {
-		return fmt.Errorf("there should be at least 3 infra nodes for multi-AZ clusters")
+		return fmt.Errorf("there should be at least 3 infra instances for multi-AZ clusters")
 	}
 
 	if !i.MultiAZ && len(infraNodes) < 2 {
-		return fmt.Errorf("there should be at least 2 infra nodes for single-AZ clusters")
+		return fmt.Errorf("there should be at least 2 infra instances for single-AZ clusters")
 	}
 
 	// Check if infras are running
 	for _, v := range infraNodes {
 		if v.State.Name != types.InstanceStateNameRunning {
-			return fmt.Errorf("found non running infra node: %s", *v.InstanceId)
+			return fmt.Errorf("found non running infra instances: %s", *v.InstanceId)
 		}
+
+		if len(v.SecurityGroups) != 1 {
+			return fmt.Errorf("one security group should be attached to %s: (%s-worker-sg), got %d", *v.InstanceId, i.InfraName, len(v.SecurityGroups))
+		}
+
+		// TODO: Check if the security group is the correct one, with tag "Name: ${infra_name}-worker-sg"
 	}
 
 	// WORKER NODES VALIDATIONS
-	i.log.Info("validating cluster's worker nodes")
+	i.log.Info("validating cluster's worker instances")
 	var workerNodes []types.Instance
 	workerPattern := fmt.Sprintf("%s-worker", i.InfraName)
 	for _, v := range instances {
@@ -133,6 +149,12 @@ func (i Instances) Validate(ctx context.Context) error {
 		if v.State.Name != types.InstanceStateNameRunning {
 			i.log.Infof("[error but not blocker]: found non running worker nodes: %s", *v.InstanceId)
 		}
+
+		if len(v.SecurityGroups) != 1 {
+			return fmt.Errorf("one security group should be attached to %s: (%s-worker-sg), got %d", *v.InstanceId, i.InfraName, len(v.SecurityGroups))
+		}
+
+		// TODO: Check if the security group is the correct one, with tag "Name: ${infra_name}-worker-sg"
 	}
 
 	return nil
@@ -143,5 +165,5 @@ func (i Instances) Documentation() string {
 }
 
 func (i Instances) FilterValue() string {
-	return "instance validation service"
+	return "EC2 Instance"
 }
