@@ -3,12 +3,13 @@ module github.com/mjlshen/mirrosa
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.3
+	github.com/aws/aws-sdk-go-v2 v1.17.4
 	github.com/aws/aws-sdk-go-v2/config v1.18.11
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.11
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.83.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.1
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.0
+	github.com/aws/smithy-go v1.13.5
 	github.com/openshift-online/ocm-cli v0.1.65
 	github.com/openshift-online/ocm-sdk-go v0.1.313
 	go.uber.org/zap v1.24.0
@@ -23,7 +24,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.12.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.2 // indirect
-	github.com/aws/smithy-go v1.13.5 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
