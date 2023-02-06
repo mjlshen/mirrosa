@@ -63,7 +63,7 @@ jobs:
 
       - name: 'Build'
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -trimpath -o mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} .
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} .
       
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
