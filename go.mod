@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.0
 	github.com/aws/smithy-go v1.13.5
 	github.com/openshift-online/ocm-cli v0.1.65
-	github.com/openshift-online/ocm-sdk-go v0.1.313
+	github.com/openshift-online/ocm-sdk-go v0.1.315
 	go.uber.org/zap v1.24.0
 )
 
