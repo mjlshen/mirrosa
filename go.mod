@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.12
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.83.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.1
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.0
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.1
 	github.com/aws/smithy-go v1.13.5
 	github.com/openshift-online/ocm-cli v0.1.65
 	github.com/openshift-online/ocm-sdk-go v0.1.315
