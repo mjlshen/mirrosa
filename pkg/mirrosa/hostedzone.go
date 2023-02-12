@@ -75,7 +75,7 @@ func (p PublicHostedZone) Validate(ctx context.Context) error {
 	return fmt.Errorf("no public hosted zone for %s found", expectedName)
 }
 
-func (p PublicHostedZone) Documentation() string {
+func (p PublicHostedZone) Description() string {
 	if p.PrivateLink {
 		return publicHostedZonePrivateLinkDescription
 	}
@@ -84,6 +84,10 @@ func (p PublicHostedZone) Documentation() string {
 }
 
 func (p PublicHostedZone) FilterValue() string {
+	return "Route53 Public Hosted Zone"
+}
+
+func (p PublicHostedZone) Title() string {
 	return "Route53 Public Hosted Zone"
 }
 
@@ -194,10 +198,14 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (p PrivateHostedZone) Documentation() string {
+func (p PrivateHostedZone) Description() string {
 	return privateHostedZoneDescription
 }
 
 func (p PrivateHostedZone) FilterValue() string {
+	return "Route53 Private Hosted Zone"
+}
+
+func (p PrivateHostedZone) Title() string {
 	return "Route53 Private Hosted Zone"
 }

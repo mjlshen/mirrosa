@@ -130,7 +130,7 @@ func (n NetworkLoadBalancer) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (n NetworkLoadBalancer) Documentation() string {
+func (n NetworkLoadBalancer) Description() string {
 	if n.PrivateLink {
 		return privateLinkApiLoadBalancerDescription
 	}
@@ -139,6 +139,10 @@ func (n NetworkLoadBalancer) Documentation() string {
 }
 
 func (n NetworkLoadBalancer) FilterValue() string {
+	return "Network Load Balancers"
+}
+
+func (n NetworkLoadBalancer) Title() string {
 	return "Network Load Balancers"
 }
 

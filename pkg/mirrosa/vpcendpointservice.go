@@ -100,10 +100,14 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 	}
 }
 
-func (v VpcEndpointService) Documentation() string {
+func (v VpcEndpointService) Description() string {
 	return vpceServiceDescription
 }
 
 func (v VpcEndpointService) FilterValue() string {
+	return "VPC Endpoint Service"
+}
+
+func (v VpcEndpointService) Title() string {
 	return "VPC Endpoint Service"
 }

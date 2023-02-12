@@ -11,7 +11,10 @@ import (
 
 const vpcDescription = "A ROSA cluster's VPC can be built by the installer or an existing one can be used. " +
 	"`enableDnsSupport` and `enableDnsHostnames` must be enabled on the VPC so that the cluster can use the " +
-	"private Route 53 Hosted Zones attached to the VPC to resolve internal DNS records."
+	"private Route 53 Hosted Zones attached to the VPC to resolve internal DNS records.\n\n" +
+	"Documentation:\n" +
+	"* BYOVPC requirements: https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#osd-aws-privatelink-firewall-prerequisites_rosa-sts-aws-prereqs\n" +
+	"* non-BYOVPC: https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#rosa-vpc_rosa-sts-aws-prereqs"
 
 // Ensure Vpc implements Component
 var _ Component = &Vpc{}
@@ -68,10 +71,14 @@ func (v Vpc) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (v Vpc) Documentation() string {
+func (v Vpc) Description() string {
 	return vpcDescription
 }
 
 func (v Vpc) FilterValue() string {
+	return "VPC"
+}
+
+func (v Vpc) Title() string {
 	return "VPC"
 }
