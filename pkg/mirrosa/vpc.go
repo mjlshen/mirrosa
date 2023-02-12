@@ -9,12 +9,18 @@ import (
 	"go.uber.org/zap"
 )
 
-const vpcDescription = "A ROSA cluster's VPC can be built by the installer or an existing one can be used. " +
-	"`enableDnsSupport` and `enableDnsHostnames` must be enabled on the VPC so that the cluster can use the " +
-	"private Route 53 Hosted Zones attached to the VPC to resolve internal DNS records.\n\n" +
-	"Documentation:\n" +
-	"* BYOVPC requirements: https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#osd-aws-privatelink-firewall-prerequisites_rosa-sts-aws-prereqs\n" +
-	"* non-BYOVPC: https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#rosa-vpc_rosa-sts-aws-prereqs"
+const vpcDescription = "A VPC is a logically isolated network in AWS and a ROSA cluster can be installed " +
+	"into an existing VPC (BYOVPC) or the installer can create one for the end-user (non-BYOVPC). " +
+	"Regardless, the 'enableDnsSupport' and 'enableDnsHostnames' settings must be enabled on the VPC so that the cluster can use the " +
+	"private Route 53 Hosted Zones attached to the VPC to resolve internal DNS records [1]." +
+	"\n\nnon-BYOVPC's must not be modified and must contain the resources exactly documented in [2], while BYOVPC's allow " +
+	"for more flexibility and the only requirement is that the required network egresses are resolvable and routable [3], " +
+	"which can be validated by osd-network-verifier [4]." +
+	"\n\nReferences:\n" +
+	"1. https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-support\n" +
+	"2. https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#rosa-vpc_rosa-sts-aws-prereqs\n" +
+	"3. https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html#osd-aws-privatelink-firewall-prerequisites_rosa-sts-aws-prereqs\n" +
+	"4. https://github.com/openshift/osd-network-verifier"
 
 // Ensure Vpc implements Component
 var _ Component = &Vpc{}
@@ -76,7 +82,7 @@ func (v Vpc) Description() string {
 }
 
 func (v Vpc) FilterValue() string {
-	return "VPC"
+	return v.Title()
 }
 
 func (v Vpc) Title() string {
