@@ -9,8 +9,14 @@ import (
 	"go.uber.org/zap"
 )
 
-const dhcpOptionsDescription = "A ROSA cluster's DHCP Options Set must not have uppercase letters in its domain-name" +
-	" due to https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names."
+const dhcpOptionsDescription = "DHCP Option Sets configure how devices uses the DHCP protocol within a VPC [1]. " +
+	"By default the 'Domain Name Servers' used is AmazonProvidedDNS and the 'Domain name' is ec2.internal in us-east-1 " +
+	"and ${region}.compute.internal in other regions. This cannot be modified for non-BYOVPC ROSA clusters.\n\n" +
+	"With BYOVPC ROSA clusters, the DHCP Option Set can be modified, but crucially its 'Domain name' must not contain " +
+	"uppercase letters (AWS allows uppercase letters, but Kubernetes DNS does not) [2]." +
+	"\n\nReferences:\n" +
+	"1. https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html\n" +
+	"2. https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names"
 
 // Ensure DhcpOptions implements Component
 var _ Component = &DhcpOptions{}
@@ -83,9 +89,9 @@ func (d DhcpOptions) Description() string {
 }
 
 func (d DhcpOptions) FilterValue() string {
-	return "DHCP Options"
+	return d.Title()
 }
 
 func (d DhcpOptions) Title() string {
-	return "DHCP Options"
+	return "DHCP Option Set"
 }
