@@ -78,10 +78,14 @@ func (d DhcpOptions) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (d DhcpOptions) Documentation() string {
+func (d DhcpOptions) Description() string {
 	return dhcpOptionsDescription
 }
 
 func (d DhcpOptions) FilterValue() string {
+	return "DHCP Options"
+}
+
+func (d DhcpOptions) Title() string {
 	return "DHCP Options"
 }

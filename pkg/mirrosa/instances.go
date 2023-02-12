@@ -160,10 +160,14 @@ func (i Instances) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (i Instances) Documentation() string {
+func (i Instances) Description() string {
 	return instanceDescription
 }
 
 func (i Instances) FilterValue() string {
+	return "EC2 Instance"
+}
+
+func (i Instances) Title() string {
 	return "EC2 Instance"
 }

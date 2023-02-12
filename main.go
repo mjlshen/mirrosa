@@ -7,7 +7,9 @@ import (
 	"os"
 	"runtime/debug"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
+	"github.com/mjlshen/mirrosa/pkg/tui"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -15,6 +17,7 @@ import (
 func main() {
 	f := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	clusterId := f.String("cluster-id", "", "OCM internal or external cluster id")
+	interactive := f.Bool("i", false, "run in an interactive exploratory mode")
 	verbose := f.Bool("v", false, "enable verbose logging")
 	f.Parse(os.Args[1:])
 
@@ -42,9 +45,16 @@ func main() {
 		}
 	}
 
+	if *interactive {
+		p := tea.NewProgram(tui.InitModel())
+		if _, err := p.Run(); err != nil {
+			sugared.Fatal(err)
+		}
+		os.Exit(0)
+	}
+
 	if *clusterId == "" {
 		sugared.Fatal("cluster id must not be empty")
-		os.Exit(1)
 	}
 
 	mirrosa, err := mirrosa.NewRosaClient(context.TODO(), sugared, *clusterId)

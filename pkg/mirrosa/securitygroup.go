@@ -10,10 +10,10 @@ import (
 )
 
 const securityGroupDescription = "Security groups act as a virtual firewall for Elastic Network Interfaces (ENIs)." +
-	" For ROSA clusters, the master and worker security groups restrict network traffic to the cluster's master and" +
-	" worker nodes. Here are some important required security group rules:" +
-	"\n  - Inbound master 6443 API server from machine CIDR" +
-	"\n  - Inbound master 22623 etcd from machine CIDR"
+	" For ROSA clusters, the control plane and worker security groups restrict network traffic to the clusters nodes and" +
+	" must not be modified. Here are some important required security group rules:" +
+	"\n  - Control Plane: Inbound TCP port 6443 from the cluster's machine CIDR for the Kubernetes API server" +
+	"\n  - Control Plane: Inbound TCP port 22623 from the cluster's machine CIDR for etcd"
 
 //"\n  - Inbound master 10257 kube-controller-manager from worker" +
 //"\n  - Inbound master 10259 kube-scheduler from worker" +
@@ -139,11 +139,15 @@ func (s SecurityGroup) Validate(ctx context.Context) error {
 	return nil
 }
 
-func (s SecurityGroup) Documentation() string {
+func (s SecurityGroup) Description() string {
 	return securityGroupDescription
 }
 
 func (s SecurityGroup) FilterValue() string {
+	return "Security Group"
+}
+
+func (s SecurityGroup) Title() string {
 	return "Security Group"
 }
 
