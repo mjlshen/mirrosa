@@ -11,9 +11,16 @@ import (
 	"go.uber.org/zap"
 )
 
-const instanceDescription = `A ROSA cluster must have the following:
-- 3 control plane instances running
-- at least 2 infra instances running for single-AZ, 3 infra instances for multi-AZ`
+const instanceDescription = "EC2 instances directly correspond to Kubernetes nodes in a healthy cluster." +
+	" Control plane and infrastructure nodes have fixed sizing depending on the number of worker nodes in the cluster [1]." +
+	"\n\nControl plane nodes run the control plane components critical for Kubernetes [2], while infrastructure nodes run " +
+	"monitoring, ingress controller, OpenShift console, and other Red Hat SRE-managed workloads. Customers must not run " +
+	"any workloads on neither control plane nor infrastructure nodes [3]. For single-AZ clusters, there must be 2 infrastructure " +
+	"nodes, while for multi-AZ clusters, there must be 3 infrastructure nodes. In all cases, there must be 3 control plane nodes." +
+	"\n\nReferences:\n" +
+	"1. https://docs.openshift.com/rosa/rosa_planning/rosa-limits-scalability.html#node-sizing-during-installation_rosa-limits-scalability\n" +
+	"2. https://kubernetes.io/docs/concepts/overview/components/\n" +
+	"3. https://docs.openshift.com/rosa/rosa_architecture/rosa_policy_service_definition/rosa-service-definition.html"
 
 var _ Component = &Instances{}
 
@@ -165,7 +172,7 @@ func (i Instances) Description() string {
 }
 
 func (i Instances) FilterValue() string {
-	return "EC2 Instance"
+	return i.Title()
 }
 
 func (i Instances) Title() string {
