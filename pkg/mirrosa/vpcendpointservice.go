@@ -10,8 +10,12 @@ import (
 	"go.uber.org/zap"
 )
 
-const vpceServiceDescription = "A PrivateLink ROSA cluster has a VPC Endpoint Service which allows Hive to connect" +
-	" to the cluster over AWS' internal network (PrivateLink), used for things like backplane and SyncSets."
+const vpceServiceDescription = "A VPC Endpoint Service allows for a load balancer to be exposed through PrivateLink, AWS' internal network, to other AWS accounts via VPC Endpoints [1]. " +
+	" A PrivateLink ROSA cluster must have a VPC Endpoint Service with a single VPC Endpoint connection that allows Hive " +
+	" to connect to the cluster over PrivateLink [2] to allow for management via SyncSets and backplane." +
+	"\n\nReferences:\n" +
+	"1. https://docs.aws.amazon.com/vpc/latest/privatelink/privatelink-share-your-services.html\n" +
+	"2. https://github.com/openshift/hive/tree/master/pkg/controller/awsprivatelink"
 
 var _ Component = &VpcEndpointService{}
 
