@@ -4,7 +4,7 @@ This document describes how to contribute to the project.
 
 ## Prerequisites
 
-- Go version 1.19+
+- Go version 1.20+
 - A valid OpenShift Cluster Manager (OCM) token and logged in via [ocm-cli](https://github.com/openshift-online/ocm-cli) or [rosa](https://github.com/openshift/rosa)
 - Access to ocm-backplane
 
