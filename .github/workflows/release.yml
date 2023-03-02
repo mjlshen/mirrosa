@@ -86,7 +86,7 @@ jobs:
 
       - name: 'Sign'
         run: |
-          cosign sign-blob --key $key mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} --output-signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
+          cosign sign-blob --yes --key $key mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} --output-signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
           cosign verify-blob --key signing.pub --signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
 
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
