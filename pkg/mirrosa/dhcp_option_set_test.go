@@ -77,10 +77,42 @@ func TestDhcpOptions_Validate(t *testing.T) {
 										Key: aws.String("domain-name"),
 										Values: []types.AttributeValue{
 											{
-												Value: aws.String("ec2.internal"),
-											},
-											{
 												Value: aws.String("My.cUsTom.DoMaIn"),
+											},
+										},
+									},
+								},
+								DhcpOptionsId: aws.String("dhcp-id"),
+							},
+						},
+					},
+					describeVpcsResp: &ec2.DescribeVpcsOutput{
+						Vpcs: []types.Vpc{
+							{
+								DhcpOptionsId: aws.String("dhcp-id"),
+								VpcId:         aws.String("id"),
+							},
+						},
+					},
+				},
+			},
+			expectErr: true,
+		},
+		{
+			name: "contains space",
+			dhcpOptions: &DhcpOptions{
+				log:   zaptest.NewLogger(t).Sugar(),
+				VpcId: "id",
+				Ec2Client: &mockMirrosaDhcpOptionsAPIClient{
+					describeDhcpOptionsResp: &ec2.DescribeDhcpOptionsOutput{
+						DhcpOptions: []types.DhcpOptions{
+							{
+								DhcpConfigurations: []types.DhcpConfiguration{
+									{
+										Key: aws.String("domain-name"),
+										Values: []types.AttributeValue{
+											{
+												Value: aws.String("www.example.com example.com"),
 											},
 										},
 									},
