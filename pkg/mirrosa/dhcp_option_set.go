@@ -13,10 +13,11 @@ const dhcpOptionsDescription = "DHCP Option Sets configure how devices uses the 
 	"By default the 'Domain Name Servers' used is AmazonProvidedDNS and the 'Domain name' is ec2.internal in us-east-1 " +
 	"and ${region}.compute.internal in other regions. This cannot be modified for non-BYOVPC ROSA clusters.\n\n" +
 	"With BYOVPC ROSA clusters, the DHCP Option Set can be modified, but crucially its 'Domain name' must not contain " +
-	"uppercase letters (AWS allows uppercase letters, but Kubernetes DNS does not) [2]." +
+	"uppercase letters (AWS allows uppercase letters, but Kubernetes DNS does not) [2] nor spaces [3]." +
 	"\n\nReferences:\n" +
 	"1. https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html\n" +
-	"2. https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names"
+	"2. https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names" +
+	"3. https://github.com/coreos/bugs/issues/1934"
 
 // Ensure DhcpOptions implements Component
 var _ Component = &DhcpOptions{}
@@ -73,6 +74,8 @@ func (d DhcpOptions) Validate(ctx context.Context) error {
 				d.log.Debugf("validating DHCP Options Set domain name: %s", *v.Value)
 				if *v.Value != strings.ToLower(*v.Value) {
 					return fmt.Errorf("DHCP Options set: %s contains uppercase letters in the domain name: %s", dhcpOptionsId, *v.Value)
+				} else if strings.Contains(*v.Value, " ") {
+					return fmt.Errorf("DHCP Options set: %s contains a space in the domain name: %s", dhcpOptionsId, *v.Value)
 				}
 			}
 		default:
