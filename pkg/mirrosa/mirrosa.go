@@ -43,7 +43,7 @@ type ClusterInfo struct {
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
 // mirrosa client. Requires valid AWS and OCM credentials to be present beforehand.
-func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string) (*Client, error) {
+func NewClient(logger *zap.SugaredLogger, clusterId string) (*Client, error) {
 	ocmConn, err := ocm.CreateConnection()
 	if err != nil {
 		return nil, err
@@ -62,22 +62,7 @@ func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string)
 		return nil, fmt.Errorf("incompatible cloud provider: %s, mirrosa is only compatible with ROSA (AWS) clusters", cluster.CloudProvider().ID())
 	}
 
-	token, err := ocm.GetToken(ctx, ocmConn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve ocm token: %w", err)
-	}
-
-	hiveShard, err := ocm.GetHiveShard(ocmConn, cluster.ID())
-	if err != nil {
-		return nil, fmt.Errorf("failed to get hive shard: %w", err)
-	}
-
-	backplaneUrl, err := ocm.GenerateBackplaneUrl(hiveShard)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate backplane url: %w", err)
-	}
-
-	cfg, err := ocm.GetCloudCredentials(ctx, backplaneUrl, cluster.ID(), token)
+	cfg, err := ocm.GetCloudCredentials(cluster.ID())
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
@@ -95,7 +80,7 @@ func NewClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string)
 }
 
 func NewRosaClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string) (*Client, error) {
-	c, err := NewClient(ctx, logger, clusterId)
+	c, err := NewClient(logger, clusterId)
 	if err != nil {
 		return nil, err
 	}
