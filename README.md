@@ -15,13 +15,13 @@ cosign verify-blob --key signing.pub --signature mirrosa_darwin_arm64.sig mirros
 ## Developer Installation
 
 ```bash
-go install github.com/mjlshen/mirrosa
+go install github.com/mjlshen/mirrosa@latest
 ```
 
 ## Prerequisites
 
 - Valid OCM session
-- Active OCM backplane tunnel (`ocm backplane tunnel -D`)
+- [backplane-cli](https://github.com/openshift/backplane-cli) with the right configuration.
 
 ## Usage
 
