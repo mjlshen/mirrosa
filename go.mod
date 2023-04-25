@@ -3,7 +3,7 @@ module github.com/mjlshen/mirrosa
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.17.8
+	github.com/aws/aws-sdk-go-v2 v1.18.0
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.93.2
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.9
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.27.7
