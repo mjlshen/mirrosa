@@ -76,8 +76,8 @@ github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.10/go.mod h1:o
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.26/go.mod h1:Bd4C/4PkVGubtNe5iMXu5BNnaBi/9t/UsFspPt4ram8=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.27 h1:0iKliEXAcCa2qVtRs7Ot5hItA2MsufrphbRFlz1Owxo=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.27/go.mod h1:EOwBD4J4S5qYszS5/3DpkejfuK+Z5/1uzICfPaZLtqw=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.28.0 h1:oB+f+T9SZtP1XSDiMlKJEarjo4bgi1/rWRFyNPXo95s=
-github.com/aws/aws-sdk-go-v2/service/route53 v1.28.0/go.mod h1:9SEpwqaALzp34eCT6w5PTh4SDDT84wxfMRx9VJSJPsk=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.28.1 h1:8e1fgdyer5IqBPtiWNsVLY/XFucmNTtYMqADyCFXTgQ=
+github.com/aws/aws-sdk-go-v2/service/route53 v1.28.1/go.mod h1:9SEpwqaALzp34eCT6w5PTh4SDDT84wxfMRx9VJSJPsk=
 github.com/aws/aws-sdk-go-v2/service/sso v1.12.8 h1:5cb3D6xb006bPTqEfCNaEA6PPEfBXxxy4NNeX/44kGk=
 github.com/aws/aws-sdk-go-v2/service/sso v1.12.8/go.mod h1:GNIveDnP+aE3jujyUSH5aZ/rktsTM5EvtKnCqBZawdw=
 github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.8 h1:NZaj0ngZMzsubWZbrEFSB4rgSQRbFq38Sd6KBxHuOIU=
