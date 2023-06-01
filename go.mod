@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.11
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.28.1
 	github.com/aws/smithy-go v1.13.5
-	github.com/charmbracelet/bubbles v0.15.0
+	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.1
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/openshift-online/ocm-cli v0.1.66
