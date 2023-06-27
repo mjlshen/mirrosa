@@ -462,8 +462,8 @@ github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9
 github.com/onsi/gomega v1.27.8 h1:gegWiwZjBsf2DgiSbf5hpokZ98JVDMcWkUiigk6/KXc=
 github.com/openshift-online/ocm-cli v0.1.67 h1:Jwb3DE4vEyIdQG8N3wfqkk05Ak8EOQ/VUwXOKyvYh4Q=
 github.com/openshift-online/ocm-cli v0.1.67/go.mod h1:OHRQXPI6EG5Jzqf6aianToVoGn7VoSZZ678dLHyCJvA=
-github.com/openshift-online/ocm-sdk-go v0.1.349 h1:1CalV04Nav+X6r/wJ6X8tKrNXXQ9Ck9rzyifq2vim/M=
-github.com/openshift-online/ocm-sdk-go v0.1.349/go.mod h1:KYOw8kAKAHyPrJcQoVR82CneQ4ofC02Na4cXXaTq4Nw=
+github.com/openshift-online/ocm-sdk-go v0.1.350 h1:iNiONoQ6R7zvvqidR7E/DTKaKiepsD0DqSseZZU2fjM=
+github.com/openshift-online/ocm-sdk-go v0.1.350/go.mod h1:KYOw8kAKAHyPrJcQoVR82CneQ4ofC02Na4cXXaTq4Nw=
 github.com/openshift/backplane-api v0.0.0-20230203044845-10f2b341bf54 h1:EFl+q3LxF1zmzruS7KvHzfUJxFOdExQF0WRe1Na3lvY=
 github.com/openshift/backplane-api v0.0.0-20230203044845-10f2b341bf54/go.mod h1:Mjfac1NyfztoqJKzD6Juya4IzP8r8BCy5ZldVXndlB0=
 github.com/openshift/backplane-cli v0.1.6 h1:p6/Vn2ffcP0VoAsQcRxlBWiwNkinFylgUBDfzx2EYY0=
