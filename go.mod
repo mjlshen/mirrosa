@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/openshift-online/ocm-cli v0.1.67
 	github.com/openshift-online/ocm-sdk-go v0.1.351
-	github.com/openshift/backplane-cli v0.1.6
+	github.com/openshift/backplane-cli v0.1.7
 	go.uber.org/zap v1.24.0
 )
 
@@ -92,7 +92,7 @@ require (
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/openshift/backplane-api v0.0.0-20230203044845-10f2b341bf54 // indirect
+	github.com/openshift/backplane-api v0.0.0-20230615010608-391cd2c4bbd8 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -119,8 +119,8 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
-	golang.org/x/term v0.8.0 // indirect
+	golang.org/x/sys v0.9.0 // indirect
+	golang.org/x/term v0.9.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
