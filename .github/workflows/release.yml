@@ -57,14 +57,14 @@ jobs:
       - name: 'Set up Go'
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
-          go-version: '1.20'
+          go-version: '1.21'
           check-latest: true
           cache: true
 
       - name: 'Build'
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} .
-      
+
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with:
           name: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
@@ -79,7 +79,7 @@ jobs:
         with:
           workload_identity_provider: ${{ env.workload_identity_provider }}
           service_account: ${{ env.service_account }}
-      
+
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           name: 'signing.pub'
@@ -103,13 +103,13 @@ jobs:
       contents: 'write'
     runs-on: ubuntu-latest
     steps:
-      # If the name input parameter is not provided, all artifacts will be downloaded. 
+      # If the name input parameter is not provided, all artifacts will be downloaded.
       # To differentiate between downloaded artifacts, a directory denoted by the artifacts name will be created for each individual artifact.
       # i.e. signing.pub will be in release_artifacts/signing.pub/signing.pub
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
           path: 'release_artifacts'
-      
+
       - name: 'Release'
         uses: "softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844" # v0.1.15
         with:
