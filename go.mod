@@ -10,7 +10,7 @@ require (
 	github.com/aws/smithy-go v1.14.2
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/charmbracelet/lipgloss v0.7.1
+	github.com/charmbracelet/lipgloss v0.8.0
 	github.com/openshift-online/ocm-cli v0.1.67
 	github.com/openshift-online/ocm-sdk-go v0.1.363
 	github.com/openshift/backplane-cli v0.1.10
@@ -89,7 +89,7 @@ require (
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.15.1 // indirect
+	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/openshift/backplane-api v0.0.0-20230615010608-391cd2c4bbd8 // indirect
