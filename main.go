@@ -3,15 +3,14 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
+	"log/slog"
 	"os"
 	"runtime/debug"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mjlshen/mirrosa/pkg/mirrosa"
 	"github.com/mjlshen/mirrosa/pkg/tui"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func main() {
@@ -21,26 +20,21 @@ func main() {
 	verbose := f.Bool("v", false, "enable verbose logging")
 	f.Parse(os.Args[1:])
 
-	cfg := zap.NewDevelopmentConfig()
-	if !*verbose {
-		cfg.Level.SetLevel(zapcore.InfoLevel)
+	opts := slog.HandlerOptions{}
+	if *verbose {
+		opts.AddSource = true
+		opts.Level = slog.LevelDebug
 	}
-
-	logger, err := cfg.Build()
-	if err != nil {
-		log.Fatalf("unable to setup logger: %s", err)
-	}
-	defer logger.Sync()
-	sugared := logger.Sugar()
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &opts))
 
 	if info, ok := debug.ReadBuildInfo(); ok {
-		sugared.Debugf("Go Version: %s", info.GoVersion)
+		logger.Debug(fmt.Sprintf("Go Version: %s", info.GoVersion))
 		for _, setting := range info.Settings {
 			if setting.Key == "vcs.revision" {
-				sugared.Debugf("Git SHA: %s", setting.Value)
+				logger.Debug(fmt.Sprintf("Git SHA: %s", setting.Value))
 			}
 			if setting.Key == "vcs.time" {
-				sugared.Debugf("From: %s", setting.Value)
+				logger.Debug(fmt.Sprintf("From: %s", setting.Value))
 			}
 		}
 	}
@@ -48,37 +42,39 @@ func main() {
 	if *interactive {
 		p := tea.NewProgram(tui.InitModel())
 		if _, err := p.Run(); err != nil {
-			sugared.Fatal(err)
+			logger.Error(err.Error())
 		}
 		os.Exit(0)
 	}
 
 	if *clusterId == "" {
-		sugared.Fatal("cluster id must not be empty")
-	}
-
-	mirrosa, err := mirrosa.NewRosaClient(context.TODO(), sugared, *clusterId)
-	if err != nil {
-		sugared.Fatal(err)
-	}
-
-	sugared.Debugf("cluster info from OCM: %+v", *mirrosa.ClusterInfo)
-	sugared.Infof("%s: \"Mirror mirror on the wall, who's the fairest of them all?\"", mirrosa.ClusterInfo.Name)
-
-	if err := mirrosa.ValidateComponents(context.TODO(),
-		mirrosa.NewVpc(),
-		mirrosa.NewDhcpOptions(),
-		mirrosa.NewSecurityGroup(),
-		mirrosa.NewVpcEndpointService(),
-		mirrosa.NewPublicHostedZone(),
-		mirrosa.NewPrivateHostedZone(),
-		mirrosa.NewApiLoadBalancer(),
-		mirrosa.NewInstances(),
-	); err != nil {
-		sugared.Error(err)
+		logger.Error("cluster id must not be empty")
 		os.Exit(1)
 	}
 
-	sugared.Infof("mirrosa: \"%s is the fairest of them all!\"", mirrosa.ClusterInfo.Name)
+	m, err := mirrosa.NewRosaClient(context.Background(), logger, *clusterId)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	logger.Debug("cluster info from OCM", "cluster info", *m.ClusterInfo)
+	logger.Info("who's the fairest of them all", "cluster", m.ClusterInfo.Name)
+
+	if err := m.ValidateComponents(context.TODO(),
+		m.NewVpc(),
+		m.NewDhcpOptions(),
+		m.NewSecurityGroup(),
+		m.NewVpcEndpointService(),
+		m.NewPublicHostedZone(),
+		m.NewPrivateHostedZone(),
+		m.NewApiLoadBalancer(),
+		m.NewInstances(),
+	); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	logger.Info(fmt.Sprintf("%s is the fairest of them all!", m.ClusterInfo.Name))
 	os.Exit(0)
 }

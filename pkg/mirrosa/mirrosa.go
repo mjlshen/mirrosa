@@ -4,17 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/mjlshen/mirrosa/pkg/ocm"
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
-	"go.uber.org/zap"
 )
 
 // Client holds relevant information about a ROSA cluster gleaned from OCM and an AwsApi to validate the cluster in AWS
 type Client struct {
-	log *zap.SugaredLogger
+	log *slog.Logger
 
 	// Cluster holds a cluster object from OCM
 	Cluster *cmv1.Cluster
@@ -41,9 +42,18 @@ type ClusterInfo struct {
 	VpcId string
 }
 
+func (c ClusterInfo) LogValue() slog.Value {
+	return slog.GroupValue(
+		slog.String("name", c.Name),
+		slog.String("infraName", c.InfraName),
+		slog.String("baseDomain", c.BaseDomain),
+		slog.String("vpcId", c.VpcId),
+	)
+}
+
 // NewClient looks up information in OCM about a given cluster id and returns a new
 // mirrosa client. Requires valid AWS and OCM credentials to be present beforehand.
-func NewClient(logger *zap.SugaredLogger, clusterId string) (*Client, error) {
+func NewClient(logger *slog.Logger, clusterId string) (*Client, error) {
 	ocmConn, err := ocm.CreateConnection()
 	if err != nil {
 		return nil, err
@@ -79,7 +89,7 @@ func NewClient(logger *zap.SugaredLogger, clusterId string) (*Client, error) {
 	return c, nil
 }
 
-func NewRosaClient(ctx context.Context, logger *zap.SugaredLogger, clusterId string) (*Client, error) {
+func NewRosaClient(ctx context.Context, logger *slog.Logger, clusterId string) (*Client, error) {
 	c, err := NewClient(logger, clusterId)
 	if err != nil {
 		return nil, err

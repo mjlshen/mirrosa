@@ -3,12 +3,13 @@ package mirrosa
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap/zaptest"
 )
 
 type mockMirrosaVpcAPI func(ctx context.Context, params *ec2.DescribeVpcAttributeInput, optFns ...func(options *ec2.Options)) (*ec2.DescribeVpcAttributeOutput, error)
@@ -76,7 +77,7 @@ func TestVpc_Validate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			v := Vpc{
-				log:       zaptest.NewLogger(t).Sugar(),
+				log:       slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				Id:        "id",
 				Ec2Client: test.client(t),
 			}

@@ -3,10 +3,10 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	"go.uber.org/zap"
 )
 
 const dhcpOptionsDescription = "DHCP Option Sets configure how devices uses the DHCP protocol within a VPC [1]. " +
@@ -28,7 +28,7 @@ type MirrosaDhcpOptionsAPIClient interface {
 }
 
 type DhcpOptions struct {
-	log   *zap.SugaredLogger
+	log   *slog.Logger
 	VpcId string
 
 	Ec2Client MirrosaDhcpOptionsAPIClient
@@ -43,7 +43,7 @@ func (c *Client) NewDhcpOptions() DhcpOptions {
 }
 
 func (d DhcpOptions) Validate(ctx context.Context) error {
-	d.log.Debugf("validating that the attached DHCP Options Set has no uppercase characters in its domain name(s)")
+	d.log.Debug("validating that the attached DHCP Options Set has no uppercase characters in its domain name(s)")
 	vpcResp, err := d.Ec2Client.DescribeVpcs(ctx, &ec2.DescribeVpcsInput{
 		VpcIds: []string{d.VpcId},
 	})
@@ -71,7 +71,7 @@ func (d DhcpOptions) Validate(ctx context.Context) error {
 		switch *config.Key {
 		case "domain-name":
 			for _, v := range config.Values {
-				d.log.Debugf("validating DHCP Options Set domain name: %s", *v.Value)
+				d.log.Debug("validating DHCP Options Set domain name", slog.String("domainName", *v.Value))
 				if *v.Value != strings.ToLower(*v.Value) {
 					return fmt.Errorf("DHCP Options set: %s contains uppercase letters in the domain name: %s", dhcpOptionsId, *v.Value)
 				} else if strings.Contains(*v.Value, " ") {

@@ -3,10 +3,11 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	elbv2 "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	"go.uber.org/zap"
 )
 
 const (
@@ -45,7 +46,7 @@ type NetworkLoadBalancerAPIClient interface {
 }
 
 type NetworkLoadBalancer struct {
-	log         *zap.SugaredLogger
+	log         *slog.Logger
 	InfraName   string
 	PrivateLink bool
 	Sts         bool
@@ -67,7 +68,7 @@ func (c *Client) NewApiLoadBalancer() NetworkLoadBalancer {
 
 func (n NetworkLoadBalancer) Validate(ctx context.Context) error {
 	for name, nlb := range n.getExpectedNLBs() {
-		n.log.Infof("searching for network load balancer: %s", nlb.name)
+		n.log.Info("searching for network load balancer", slog.String("name", nlb.name))
 		resp, err := n.ElbV2Client.DescribeLoadBalancers(ctx, &elbv2.DescribeLoadBalancersInput{
 			Names: []string{nlb.name},
 		})
@@ -91,7 +92,7 @@ func (n NetworkLoadBalancer) Validate(ctx context.Context) error {
 		case 0:
 			return fmt.Errorf("NLB %s not found in VPC: %s", nlb.name, n.VpcId)
 		case 1:
-			n.log.Infof("found NLB: %s", matches[0])
+			n.log.Info("found NLB", slog.String("arn", matches[0]))
 			nlbArn = matches[0]
 		default:
 			return fmt.Errorf("multiple matches found for NLB: %s in VPC %s", nlb.name, n.VpcId)
@@ -109,14 +110,14 @@ func (n NetworkLoadBalancer) Validate(ctx context.Context) error {
 				break
 			}
 
-			n.log.Debugf("found listener: %s", *l.ListenerArn)
+			n.log.Debug("found listener", slog.String("arn", *l.ListenerArn))
 			for k, expectedListener := range nlb.expectedListeners {
 				if listenersEqual(expectedListener, l) {
 					if err := n.validateTargetGroups(ctx, *l.DefaultActions[0].TargetGroupArn, expectedListener.healthyTargets); err != nil {
 						return err
 					}
 
-					n.log.Infof("listener validated for %s: %+v", k, expectedListener)
+					n.log.Info("listener validated", slog.String("elb", k), slog.String("listenerConfig", fmt.Sprintf("%+v", expectedListener)))
 					delete(nlb.expectedListeners, k)
 				}
 			}
@@ -190,8 +191,8 @@ func listenersEqual(expected listener, actual types.Listener) bool {
 
 // validateTargetGroups searches for a target group by arn and checks if it has the expected number of healthy targets
 func (n NetworkLoadBalancer) validateTargetGroups(ctx context.Context, arn string, expected int) error {
-	n.log.Infof("validating target group: %s", arn)
-	n.log.Debugf("searching for target group: %s", arn)
+	n.log.Info("validating target groups", slog.String("arn", arn))
+	n.log.Debug("searching for target groups", slog.String("arn", arn))
 	resp, err := n.ElbV2Client.DescribeTargetGroups(ctx, &elbv2.DescribeTargetGroupsInput{
 		TargetGroupArns: []string{arn},
 	})
@@ -203,12 +204,12 @@ func (n NetworkLoadBalancer) validateTargetGroups(ctx context.Context, arn strin
 	case 0:
 		return fmt.Errorf("target group %s not found", arn)
 	case 1:
-		n.log.Debugf("found target group: %s", *resp.TargetGroups[0].TargetGroupArn)
+		n.log.Debug("found target group", slog.String("arn", *resp.TargetGroups[0].TargetGroupArn))
 	default:
 		return fmt.Errorf("multiple matches found for target group: %s", arn)
 	}
 
-	n.log.Debugf("validating target group: %s has %d healthy targets", arn, expected)
+	n.log.Debug("validating target group: %s has %d healthy targets", slog.String("arn", arn), slog.Int("healthyTargets", expected))
 	healthResp, err := n.ElbV2Client.DescribeTargetHealth(ctx, &elbv2.DescribeTargetHealthInput{
 		TargetGroupArn: aws.String(arn),
 	})
@@ -227,6 +228,6 @@ func (n NetworkLoadBalancer) validateTargetGroups(ctx context.Context, arn strin
 		return fmt.Errorf("expected %d healthy targets for %s, only found %d", expected, arn, healthyTargets)
 	}
 
-	n.log.Infof("validated target group: %s", arn)
+	n.log.Info("validated target group", slog.String("arn", arn))
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap"
+	"log/slog"
 )
 
 const vpceServiceDescription = "A VPC Endpoint Service allows for a load balancer to be exposed through PrivateLink, AWS' internal network, to other AWS accounts via VPC Endpoints [1]. " +
@@ -26,7 +26,7 @@ type MirrosaVpcEndpointServiceAPIClient interface {
 }
 
 type VpcEndpointService struct {
-	log         *zap.SugaredLogger
+	log         *slog.Logger
 	InfraName   string
 	PrivateLink bool
 
@@ -48,7 +48,7 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 		return nil
 	}
 
-	v.log.Infof("searching for PrivateLink VPC Endpoint Service: %s-vpc-endpoint-service", v.InfraName)
+	v.log.Info("searching for PrivateLink VPC Endpoint Service", slog.String("name", fmt.Sprintf("%s-vpc-endpoint-service", v.InfraName)))
 	var serviceId string
 	resp, err := v.Ec2Client.DescribeVpcEndpointServices(ctx, &ec2.DescribeVpcEndpointServicesInput{
 		Filters: []types.Filter{
@@ -70,13 +70,13 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 	case 0:
 		return errors.New("no VPC Endpoint Services found for PrivateLink cluster")
 	case 1:
-		v.log.Infof("found VPC Endpoint Service: %s", *resp.ServiceDetails[0].ServiceId)
+		v.log.Info("found VPC Endpoint Service", slog.String("id", *resp.ServiceDetails[0].ServiceId))
 		serviceId = *resp.ServiceDetails[0].ServiceId
 	default:
 		return errors.New("multiple VPC Endpoint Services found for PrivateLink cluster")
 	}
 
-	v.log.Infof("validating VPC Endpoint Service: %s", *resp.ServiceDetails[0].ServiceId)
+	v.log.Info("validating VPC Endpoint Service", slog.String("id", *resp.ServiceDetails[0].ServiceId))
 	cxResp, err := v.Ec2Client.DescribeVpcEndpointConnections(ctx, &ec2.DescribeVpcEndpointConnectionsInput{
 		Filters: []types.Filter{
 			{
@@ -97,7 +97,7 @@ func (v VpcEndpointService) Validate(ctx context.Context) error {
 	case 0:
 		return fmt.Errorf("no available VPC Endpoint connections found for %s", serviceId)
 	case 1:
-		v.log.Infof("validated that one accepted VPC Endpoint connection for %s exists", serviceId)
+		v.log.Info("validated that one accepted VPC Endpoint connection exists", slog.String("id", serviceId))
 		return nil
 	default:
 		return fmt.Errorf("multiple available VPC Endpoint connections found for %s", serviceId)

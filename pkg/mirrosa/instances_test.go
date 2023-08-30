@@ -2,12 +2,13 @@ package mirrosa
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap/zaptest"
 )
 
 type mockMirrosaInstancesAPIClient struct {
@@ -27,7 +28,7 @@ func TestInstances_Validate(t *testing.T) {
 		{
 			name: "no instances",
 			instances: &Instances{
-				log: zaptest.NewLogger(t).Sugar(),
+				log: slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				Ec2Client: &mockMirrosaInstancesAPIClient{
 					describeInstancesResp: &ec2.DescribeInstancesOutput{
 						Reservations: []types.Reservation{},
@@ -39,7 +40,7 @@ func TestInstances_Validate(t *testing.T) {
 		{
 			name: "healthy multi-az",
 			instances: &Instances{
-				log:       zaptest.NewLogger(t).Sugar(),
+				log:       slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				InfraName: "mock",
 				MultiAZ:   true,
 				Ec2Client: &mockMirrosaInstancesAPIClient{

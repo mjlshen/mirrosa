@@ -3,12 +3,14 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
+	"testing"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/smithy-go/middleware"
-	"go.uber.org/zap/zaptest"
-	"testing"
 )
 
 type mockMirrosaHostedZoneAPIClient struct {
@@ -68,7 +70,7 @@ func TestPublicHostedZone_Validate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := PublicHostedZone{
-				log:         zaptest.NewLogger(t).Sugar(),
+				log:         slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				BaseDomain:  "",
 				PrivateLink: false,
 				Route53Client: &mockMirrosaHostedZoneAPIClient{
@@ -152,7 +154,7 @@ func TestPrivateHostedZone_Validate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := PrivateHostedZone{
-				log:         zaptest.NewLogger(t).Sugar(),
+				log:         slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				ClusterName: mockCluster,
 				BaseDomain:  mockDomain,
 				Region:      "",

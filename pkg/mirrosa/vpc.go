@@ -3,10 +3,11 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap"
 )
 
 const vpcDescription = "A VPC is a logically isolated network in AWS and a ROSA cluster can be installed " +
@@ -31,7 +32,7 @@ type MirrosaVpcAPIClient interface {
 }
 
 type Vpc struct {
-	log *zap.SugaredLogger
+	log *slog.Logger
 	Id  string
 
 	Ec2Client MirrosaVpcAPIClient
@@ -46,9 +47,9 @@ func (c *Client) NewVpc() Vpc {
 }
 
 func (v Vpc) Validate(ctx context.Context) error {
-	v.log.Infof("validating vpc: %s", v.Id)
+	v.log.Info("validating vpc", slog.String("id", v.Id))
 
-	v.log.Debugf("validating that enableDnsHostnames is true for vpc: %s", v.Id)
+	v.log.Debug("validating that enableDnsHostnames is true", slog.String("id", v.Id))
 	dnsHostnames, err := v.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
 		Attribute: types.VpcAttributeNameEnableDnsHostnames,
 		VpcId:     aws.String(v.Id),
@@ -61,7 +62,7 @@ func (v Vpc) Validate(ctx context.Context) error {
 		return fmt.Errorf("enableDnsHostnames is false for VPC: %s", v.Id)
 	}
 
-	v.log.Debugf("validating that enableDnsSupport is true for vpc: %s", v.Id)
+	v.log.Debug("validating that enableDnsSupport is true", slog.String("id", v.Id))
 	dnsSupport, err := v.Ec2Client.DescribeVpcAttribute(ctx, &ec2.DescribeVpcAttributeInput{
 		Attribute: types.VpcAttributeNameEnableDnsSupport,
 		VpcId:     aws.String(v.Id),

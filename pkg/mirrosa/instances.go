@@ -3,12 +3,12 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap"
 )
 
 const instanceDescription = "EC2 instances directly correspond to Kubernetes nodes in a healthy cluster." +
@@ -29,7 +29,7 @@ type MirrosaInstancesAPIClient interface {
 }
 
 type Instances struct {
-	log       *zap.SugaredLogger
+	log       *slog.Logger
 	InfraName string
 	MultiAZ   bool
 
@@ -154,7 +154,7 @@ func (i Instances) Validate(ctx context.Context) error {
 	// Check if worker are running
 	for _, v := range workerNodes {
 		if v.State.Name != types.InstanceStateNameRunning {
-			i.log.Infof("[error but not blocker]: found non running worker nodes: %s", *v.InstanceId)
+			i.log.Info("found non running worker nodes", slog.String("id", *v.InstanceId))
 		}
 
 		if len(v.SecurityGroups) != 1 {

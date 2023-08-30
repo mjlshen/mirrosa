@@ -2,11 +2,13 @@ package mirrosa
 
 import (
 	"context"
+	"log/slog"
+	"os"
+	"testing"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap/zaptest"
-	"testing"
 )
 
 type mockMirrosaDhcpOptionsAPIClient struct {
@@ -31,7 +33,7 @@ func TestDhcpOptions_Validate(t *testing.T) {
 		{
 			name: "all lowercase",
 			dhcpOptions: &DhcpOptions{
-				log:   zaptest.NewLogger(t).Sugar(),
+				log:   slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				VpcId: "id",
 				Ec2Client: &mockMirrosaDhcpOptionsAPIClient{
 					describeDhcpOptionsResp: &ec2.DescribeDhcpOptionsOutput{
@@ -66,7 +68,7 @@ func TestDhcpOptions_Validate(t *testing.T) {
 		{
 			name: "contains uppercase",
 			dhcpOptions: &DhcpOptions{
-				log:   zaptest.NewLogger(t).Sugar(),
+				log:   slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				VpcId: "id",
 				Ec2Client: &mockMirrosaDhcpOptionsAPIClient{
 					describeDhcpOptionsResp: &ec2.DescribeDhcpOptionsOutput{
@@ -101,7 +103,7 @@ func TestDhcpOptions_Validate(t *testing.T) {
 		{
 			name: "contains space",
 			dhcpOptions: &DhcpOptions{
-				log:   zaptest.NewLogger(t).Sugar(),
+				log:   slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				VpcId: "id",
 				Ec2Client: &mockMirrosaDhcpOptionsAPIClient{
 					describeDhcpOptionsResp: &ec2.DescribeDhcpOptionsOutput{
