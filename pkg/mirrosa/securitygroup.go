@@ -3,10 +3,11 @@ package mirrosa
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap"
 )
 
 const securityGroupDescription = "Security groups act as a virtual firewall for Elastic Network Interfaces (ENIs)." +
@@ -30,7 +31,7 @@ type securityGroupRule struct {
 var _ Component = &SecurityGroup{}
 
 type SecurityGroup struct {
-	log         *zap.SugaredLogger
+	log         *slog.Logger
 	InfraName   string
 	MachineCIDR string
 
@@ -58,7 +59,7 @@ func (s SecurityGroup) Validate(ctx context.Context) error {
 	}
 
 	for group := range expectedGroups {
-		s.log.Infof("searching for security group: %s", group)
+		s.log.Info("searching for security group", slog.String("name", group))
 		resp, err := s.Ec2Client.DescribeSecurityGroups(ctx, &ec2.DescribeSecurityGroupsInput{
 			Filters: []types.Filter{
 				{
@@ -79,7 +80,7 @@ func (s SecurityGroup) Validate(ctx context.Context) error {
 		case 0:
 			return fmt.Errorf("security group: %s not found", group)
 		case 1:
-			s.log.Infof("found security group: %s", *resp.SecurityGroups[0].GroupId)
+			s.log.Info("found security group", slog.String("name", group), slog.String("id", *resp.SecurityGroups[0].GroupId))
 			expectedGroups[group] = *resp.SecurityGroups[0].GroupId
 		default:
 			return fmt.Errorf("multiple matches found for security group: %s", group)
@@ -123,10 +124,10 @@ func (s SecurityGroup) Validate(ctx context.Context) error {
 			break
 		}
 
-		s.log.Debugf("found security group rule %s", *rule.SecurityGroupRuleId)
+		s.log.Debug("found security group rule", slog.String("id", *rule.SecurityGroupRuleId))
 		for k, expectedRule := range expectedMasterRules {
 			if compareSecurityGroupRules(expectedRule, rule) {
-				s.log.Infof("security group rule validated for %s: %+v", k, expectedRule)
+				s.log.Info("security group rule validated", slog.String("component", k), slog.String("expectedRule", fmt.Sprintf("%+v", expectedRule)))
 				delete(expectedMasterRules, k)
 			}
 		}

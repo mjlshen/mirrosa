@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
-	"go.uber.org/zap"
 )
 
 const (
@@ -38,7 +39,7 @@ type Route53AwsApi interface {
 }
 
 type PublicHostedZone struct {
-	log         *zap.SugaredLogger
+	log         *slog.Logger
 	BaseDomain  string
 	PrivateLink bool
 
@@ -57,7 +58,7 @@ func (c *Client) NewPublicHostedZone() PublicHostedZone {
 func (p PublicHostedZone) Validate(ctx context.Context) error {
 	expectedName := fmt.Sprintf("%s.", p.BaseDomain)
 
-	p.log.Infof("searching for Public Hosted Zone: %s", expectedName)
+	p.log.Info("searching for Public Hosted Zone", slog.String("name", expectedName))
 	hzs, err := p.Route53Client.ListHostedZonesByName(ctx, &route53.ListHostedZonesByNameInput{
 		DNSName: aws.String(expectedName),
 	})
@@ -67,7 +68,7 @@ func (p PublicHostedZone) Validate(ctx context.Context) error {
 
 	for _, hz := range hzs.HostedZones {
 		if !hz.Config.PrivateZone {
-			p.log.Infof("found Public Hosted Zone: %s", *hz.Id)
+			p.log.Info("found Public Hosted Zone", slog.String("id", *hz.Id))
 			return nil
 		}
 	}
@@ -95,7 +96,7 @@ func (p PublicHostedZone) Title() string {
 var _ Component = &PrivateHostedZone{}
 
 type PrivateHostedZone struct {
-	log         *zap.SugaredLogger
+	log         *slog.Logger
 	ClusterName string
 	BaseDomain  string
 	Region      types.VPCRegion
@@ -120,7 +121,7 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 		return errors.New("must specify a BaseDomain, ClusterName, and VpcId")
 	}
 
-	p.log.Infof("searching for Private Hosted Zone: %s.%s", p.ClusterName, p.BaseDomain)
+	p.log.Info("searching for Private Hosted Zone", slog.String("name", fmt.Sprintf("%s.%s", p.ClusterName, p.BaseDomain)))
 	var privateHostedZoneId string
 	expectedName := fmt.Sprintf("%s.%s.", p.ClusterName, p.BaseDomain)
 
@@ -133,7 +134,7 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 
 	for _, hz := range resp.HostedZones {
 		if hz.Config.PrivateZone && *hz.Name == expectedName {
-			p.log.Debugf("considering Hosted Zone: %s - %s", *hz.Id, *hz.Name)
+			p.log.Debug("considering Hosted Zone", slog.String("id", *hz.Id), slog.String("name", *hz.Name))
 			private, err := p.Route53Client.GetHostedZone(ctx, &route53.GetHostedZoneInput{
 				Id: hz.Id,
 			})
@@ -142,12 +143,12 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 			}
 
 			if len(private.VPCs) == 0 {
-				p.log.Debugf("Hosted Zone: %s is not associated with any VPCs", *hz.Id)
+				p.log.Debug("Hosted Zone is not associated with any VPCs", slog.String("id", *hz.Id))
 				continue
 			} else {
 				for _, vpc := range private.VPCs {
 					if *vpc.VPCId == p.VpcId {
-						p.log.Infof("found Private Hosted Zone: %s", *private.HostedZone.Id)
+						p.log.Info("found Private Hosted Zone", slog.String("id", *private.HostedZone.Id))
 						privateHostedZoneId = *private.HostedZone.Id
 						break
 					}
@@ -160,7 +161,7 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 		return fmt.Errorf("no private hosted zone associated to %s for %s found", p.VpcId, expectedName)
 	}
 
-	p.log.Infof("validating records in Private Hosted Zone: %s", privateHostedZoneId)
+	p.log.Info("validating records in Private Hosted Zone", slog.String("id", privateHostedZoneId))
 	// TODO: Handle pagination
 	records, err := p.Route53Client.ListResourceRecordSets(ctx, &route53.ListResourceRecordSetsInput{
 		HostedZoneId: aws.String(privateHostedZoneId),
@@ -182,7 +183,7 @@ func (p PrivateHostedZone) Validate(ctx context.Context) error {
 		}
 
 		if _, ok := expectedRecords[*record.Name]; ok {
-			p.log.Debugf("found record: %s", *record.Name)
+			p.log.Debug("found record", slog.String("name", *record.Name))
 			// All expected records are A records
 			if record.Type != types.RRTypeA || record.AliasTarget == nil {
 				return fmt.Errorf("%s has no value or an incorrect type", *record.Name)

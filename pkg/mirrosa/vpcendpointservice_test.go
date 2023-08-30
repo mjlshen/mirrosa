@@ -2,12 +2,13 @@ package mirrosa
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"go.uber.org/zap/zaptest"
 )
 
 type mockMirrosaVpcEndpointServiceAPIClient struct {
@@ -69,7 +70,7 @@ func TestVpcEndpointService_Validate(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			v := VpcEndpointService{
-				log:         zaptest.NewLogger(t).Sugar(),
+				log:         slog.New(slog.NewTextHandler(os.Stdout, nil)),
 				PrivateLink: test.privatelink,
 				Ec2Client:   test.mock,
 			}
