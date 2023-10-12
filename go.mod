@@ -10,7 +10,7 @@ require (
 	github.com/aws/smithy-go v1.15.0
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/charmbracelet/lipgloss v0.9.0
+	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/openshift-online/ocm-cli v0.1.69
 	github.com/openshift-online/ocm-sdk-go v0.1.373
 	github.com/openshift/backplane-cli v0.1.12
