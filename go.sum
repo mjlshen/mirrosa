@@ -478,8 +478,8 @@ github.com/onsi/gomega v1.17.0/go.mod h1:HnhC7FXeEQY45zxNK3PPoIUhzk/80Xly9PcubAl
 github.com/onsi/gomega v1.19.0/go.mod h1:LY+I3pBVzYsTBU1AnDwOSxaYi9WoWiqgwooUqq9yPro=
 github.com/onsi/gomega v1.28.0 h1:i2rg/p9n/UqIDAMFUJ6qIUUMcsqOuUHgbpbu235Vr1c=
 github.com/onsi/gomega v1.28.0/go.mod h1:A1H2JE76sI14WIP57LMKj7FVfCHx3g3BcZVjJG8bjX8=
-github.com/openshift-online/ocm-cli v0.1.69 h1:t2j/V4KT42hcNy51Gv9EIDLlNVX49ivvsEE6beelS38=
-github.com/openshift-online/ocm-cli v0.1.69/go.mod h1:9CVIJS06CCjphGjDL41UFXgy7atKgQrK7pvH3iWcYis=
+github.com/openshift-online/ocm-cli v0.1.70 h1:LTfEZ7mtamD770J+5glaAl6swS4CnBR5qaNBnbVc4Pc=
+github.com/openshift-online/ocm-cli v0.1.70/go.mod h1:9CVIJS06CCjphGjDL41UFXgy7atKgQrK7pvH3iWcYis=
 github.com/openshift-online/ocm-sdk-go v0.1.373 h1:oYdLASWXVkcB8nezoiGsKY14sIE7YNtvBn1HCFDqpGc=
 github.com/openshift-online/ocm-sdk-go v0.1.373/go.mod h1:KYOw8kAKAHyPrJcQoVR82CneQ4ofC02Na4cXXaTq4Nw=
 github.com/openshift/backplane-api v0.0.0-20230919035427-a52e4ae498fb h1:hs/QQB+1gHpFozwc0lXIy+V7iMkzkkJSKdCaCumjw8Q=
