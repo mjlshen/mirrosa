@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.9.1
 	github.com/openshift-online/ocm-cli v0.1.70
 	github.com/openshift-online/ocm-sdk-go v0.1.373
-	github.com/openshift/backplane-cli v0.1.13
+	github.com/openshift/backplane-cli v0.1.14
 )
 
 require (
