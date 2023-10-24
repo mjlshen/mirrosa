@@ -16,7 +16,7 @@ const dhcpOptionsDescription = "DHCP Option Sets configure how devices uses the 
 	"uppercase letters (AWS allows uppercase letters, but Kubernetes DNS does not) [2] nor spaces [3]." +
 	"\n\nReferences:\n" +
 	"1. https://docs.aws.amazon.com/vpc/latest/userguide/VPC_DHCP_Options.html\n" +
-	"2. https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names" +
+	"2. https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names\n" +
 	"3. https://github.com/coreos/bugs/issues/1934"
 
 // Ensure DhcpOptions implements Component
