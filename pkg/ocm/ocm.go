@@ -52,11 +52,11 @@ func GetCluster(conn *sdk.Connection, clusterId string) (*cmv1.Cluster, error) {
 }
 
 // GetCloudCredentials sets up AWS credentials via backplane-api given a cluster id, OCM token, and backplane-api URL
-func GetCloudCredentials(clusterId string) (aws.Config, error) {
+func GetCloudCredentials(cluster *cmv1.Cluster) (aws.Config, error) {
 	bp, err := bpconfig.GetBackplaneConfiguration()
 	if err != nil {
 		return aws.Config{}, err
 	}
 
-	return bpcloud.GetAWSV2Config(bp.URL, clusterId)
+	return bpcloud.GetAWSV2Config(bp.URL, cluster)
 }
