@@ -9,7 +9,7 @@ import (
 	"github.com/openshift-online/ocm-cli/pkg/ocm"
 	sdk "github.com/openshift-online/ocm-sdk-go"
 	cmv1 "github.com/openshift-online/ocm-sdk-go/clustersmgmt/v1"
-	bpcloud "github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
+	"github.com/openshift/backplane-cli/cmd/ocm-backplane/cloud"
 	bpconfig "github.com/openshift/backplane-cli/pkg/cli/config"
 )
 
@@ -52,11 +52,17 @@ func GetCluster(conn *sdk.Connection, clusterId string) (*cmv1.Cluster, error) {
 }
 
 // GetCloudCredentials sets up AWS credentials via backplane-api given a cluster id, OCM token, and backplane-api URL
-func GetCloudCredentials(cluster *cmv1.Cluster) (aws.Config, error) {
+func GetCloudCredentials(conn *sdk.Connection, cluster *cmv1.Cluster) (aws.Config, error) {
 	bp, err := bpconfig.GetBackplaneConfiguration()
 	if err != nil {
 		return aws.Config{}, err
 	}
 
-	return bpcloud.GetAWSV2Config(bp.URL, cluster)
+	qc := &cloud.QueryConfig{
+		BackplaneConfiguration: bp,
+		OcmConnection:          conn,
+		Cluster:                cluster,
+	}
+
+	return qc.GetAWSV2Config()
 }

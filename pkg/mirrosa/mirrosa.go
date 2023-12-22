@@ -72,7 +72,7 @@ func NewClient(logger *slog.Logger, clusterId string) (*Client, error) {
 		return nil, fmt.Errorf("incompatible cloud provider: %s, mirrosa is only compatible with ROSA (AWS) clusters", cluster.CloudProvider().ID())
 	}
 
-	cfg, err := ocm.GetCloudCredentials(cluster)
+	cfg, err := ocm.GetCloudCredentials(ocmConn, cluster)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
