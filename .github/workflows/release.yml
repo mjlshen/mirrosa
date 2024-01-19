@@ -31,7 +31,7 @@ jobs:
       - name: 'Sign'
         run: cosign public-key --key $key --outfile signing.pub
 
-      - uses: actions/upload-artifact@1eb3cb2b3e0f29609092a73eb033bb759a334595 # v4.1.0
+      - uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         with:
           name: 'signing.pub'
           path: 'signing.pub'
@@ -65,7 +65,7 @@ jobs:
         run: |
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} .
 
-      - uses: actions/upload-artifact@1eb3cb2b3e0f29609092a73eb033bb759a334595 # v4.1.0
+      - uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         with:
           name: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
           path: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
@@ -89,7 +89,7 @@ jobs:
           cosign sign-blob --yes --key $key mirrosa_${{ matrix.goos }}_${{ matrix.goarch }} --output-signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
           cosign verify-blob --key signing.pub --signature mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}
 
-      - uses: actions/upload-artifact@1eb3cb2b3e0f29609092a73eb033bb759a334595 # v4.1.0
+      - uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6 # v4.2.0
         with:
           name: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
           path: mirrosa_${{ matrix.goos }}_${{ matrix.goarch }}.sig
