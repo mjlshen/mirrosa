@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
+	"net/url"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
@@ -53,7 +55,7 @@ func (c ClusterInfo) LogValue() slog.Value {
 
 // NewClient looks up information in OCM about a given cluster id and returns a new
 // mirrosa client. Requires valid AWS and OCM credentials to be present beforehand.
-func NewClient(logger *slog.Logger, clusterId string) (*Client, error) {
+func NewClient(logger *slog.Logger, clusterId string, awsProxy string) (*Client, error) {
 	ocmConn, err := ocm.CreateConnection()
 	if err != nil {
 		return nil, err
@@ -77,6 +79,16 @@ func NewClient(logger *slog.Logger, clusterId string) (*Client, error) {
 		return nil, fmt.Errorf("failed to generate cloud credentials: %w", err)
 	}
 
+	if awsProxy != "" {
+		cfg.HTTPClient = &http.Client{
+			Transport: &http.Transport{
+				Proxy: func(*http.Request) (*url.URL, error) {
+					return url.Parse(awsProxy)
+				},
+			},
+		}
+	}
+
 	c := &Client{
 		AwsConfig: cfg,
 		Cluster:   cluster,
@@ -89,8 +101,8 @@ func NewClient(logger *slog.Logger, clusterId string) (*Client, error) {
 	return c, nil
 }
 
-func NewRosaClient(ctx context.Context, logger *slog.Logger, clusterId string) (*Client, error) {
-	c, err := NewClient(logger, clusterId)
+func NewRosaClient(ctx context.Context, logger *slog.Logger, clusterId string, awsProxy string) (*Client, error) {
+	c, err := NewClient(logger, clusterId, awsProxy)
 	if err != nil {
 		return nil, err
 	}

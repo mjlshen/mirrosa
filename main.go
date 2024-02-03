@@ -18,6 +18,7 @@ func main() {
 	clusterId := f.String("cluster-id", "", "OCM internal or external cluster id")
 	interactive := f.Bool("i", false, "run in an interactive exploratory mode")
 	verbose := f.Bool("v", false, "enable verbose logging")
+	awsProxy := f.String("aws-proxy", "", "[optional] proxy to use for aws requests")
 	f.Parse(os.Args[1:])
 
 	opts := slog.HandlerOptions{}
@@ -52,7 +53,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	m, err := mirrosa.NewRosaClient(context.Background(), logger, *clusterId)
+	m, err := mirrosa.NewRosaClient(context.Background(), logger, *clusterId, *awsProxy)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
