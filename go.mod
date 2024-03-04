@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.25.2
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.149.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.149.2
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.30.1
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.1
 	github.com/aws/smithy-go v1.20.1
