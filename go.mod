@@ -13,24 +13,24 @@ require (
 	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/openshift-online/ocm-cli v0.1.72
 	github.com/openshift-online/ocm-sdk-go v0.1.411
-	github.com/openshift/backplane-cli v0.1.25
+	github.com/openshift/backplane-cli v0.1.26
 )
 
 require (
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
-	github.com/aws/aws-sdk-go-v2/config v1.27.4 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.4 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.15.2 // indirect
+	github.com/aws/aws-sdk-go-v2/config v1.27.7 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.17.7 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.15.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.11.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.11.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.20.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.23.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.28.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.20.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.23.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.28.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -72,7 +72,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.18 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
