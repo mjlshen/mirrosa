@@ -389,8 +389,8 @@ github.com/openshift-online/ocm-sdk-go v0.1.418 h1:UgMcx16YOS0cs6c0b0ZXbffnjciiu
 github.com/openshift-online/ocm-sdk-go v0.1.418/go.mod h1:CiAu2jwl3ITKOxkeV0Qnhzv4gs35AmpIzVABQLtcI2Y=
 github.com/openshift/backplane-api v0.0.0-20230919035427-a52e4ae498fb h1:hs/QQB+1gHpFozwc0lXIy+V7iMkzkkJSKdCaCumjw8Q=
 github.com/openshift/backplane-api v0.0.0-20230919035427-a52e4ae498fb/go.mod h1:RuJZpJy45AJnkp7A0ZPTZhLOVkCGDLI6cGknKvp65LE=
-github.com/openshift/backplane-cli v0.1.29 h1:21TLNRKA48skBfZsUX+x/AYQgVv2EPKQ1f9Mcy+MosU=
-github.com/openshift/backplane-cli v0.1.29/go.mod h1:ksutDU5MtFcqtjj/uQgaR9cta6JwrJgBg7b+GSl8gmE=
+github.com/openshift/backplane-cli v0.1.30 h1:dX30koeJ7M0QA1FtGQWN1nef/zaaKde1UmkKc5jqohs=
+github.com/openshift/backplane-cli v0.1.30/go.mod h1:ksutDU5MtFcqtjj/uQgaR9cta6JwrJgBg7b+GSl8gmE=
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
 github.com/pelletier/go-toml/v2 v2.1.0/go.mod h1:tJU2Z3ZkXwnxa4DPO899bsyIoywizdUvyaeZurnPPDc=
 github.com/perimeterx/marshmallow v1.1.4 h1:pZLDH9RjlLGGorbXhcaQLhfuV0pFMNfPO55FuFkxqLw=
