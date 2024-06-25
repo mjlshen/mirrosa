@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.41.1
 	github.com/aws/smithy-go v1.20.2
 	github.com/charmbracelet/bubbles v0.18.0
-	github.com/charmbracelet/bubbletea v0.26.5
+	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v0.11.0
 	github.com/openshift-online/ocm-cli v0.1.73
 	github.com/openshift-online/ocm-sdk-go v0.1.427
