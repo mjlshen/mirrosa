@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.167.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.33.0
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.42.0
-	github.com/aws/smithy-go v1.20.2
+	github.com/aws/smithy-go v1.20.3
 	github.com/charmbracelet/bubbles v0.18.0
 	github.com/charmbracelet/bubbletea v0.26.6
 	github.com/charmbracelet/lipgloss v0.11.0
