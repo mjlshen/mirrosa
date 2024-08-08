@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: 'Install Cosign'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
 
       - name: 'Authenticate to GCP'
         uses: google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2 # v2.1.4
@@ -72,7 +72,7 @@ jobs:
           retention-days: 1
 
       - name: 'Install Cosign'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
 
       - name: 'Authenticate to GCP'
         uses: google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2 # v2.1.4
