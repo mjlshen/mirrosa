@@ -12,7 +12,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.1.0
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/openshift-online/ocm-cli v0.1.75
-	github.com/openshift-online/ocm-sdk-go v0.1.439
+	github.com/openshift-online/ocm-sdk-go v0.1.440
 	github.com/openshift/backplane-cli v0.1.35
 )
 
