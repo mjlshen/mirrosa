@@ -4,10 +4,10 @@ go 1.23
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.31.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.179.2
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.38.3
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.44.3
-	github.com/aws/smithy-go v1.21.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.180.0
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.38.4
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.44.4
+	github.com/aws/smithy-go v1.22.0
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
